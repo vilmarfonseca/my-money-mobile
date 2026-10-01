@@ -45,13 +45,18 @@ export function useScreenQuery<M extends MobileApiMethod>(
   options?: QueryOptions<M>,
 ): UseQueryResult<ApiResult<M>, ApiError> {
   const query = useApiQuery(method, args, options);
-  const { refetch } = query;
+  const queryClient = useQueryClient();
+  const queryKey = JSON.stringify([method, ...args]);
 
   useFocusEffect(
     useCallback(() => {
-      // `cancelRefetch: false` joins a fetch already in flight (the mount's).
-      void refetch({ cancelRefetch: false });
-    }, [refetch]),
+      // Only data past its stale time is reloaded; a fetch already in flight
+      // (the mount's) is joined rather than repeated.
+      void queryClient.refetchQueries(
+        { queryKey: JSON.parse(queryKey), exact: true, stale: true },
+        { cancelRefetch: false },
+      );
+    }, [queryClient, queryKey]),
   );
 
   return query;

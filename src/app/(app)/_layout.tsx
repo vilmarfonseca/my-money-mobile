@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { type Href, Stack, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 
@@ -11,6 +11,7 @@ import { Text } from '@/components/ui/text';
 import { I18nProvider, useI18n } from '@/lib/i18n/provider';
 import { AppDataProvider } from '@/providers/app-data-provider';
 import { useSession } from '@/providers/auth-provider';
+import { consumePendingLink } from '@/providers/pending-link';
 import { useTheme } from '@/theme/theme-provider';
 
 /**
@@ -24,6 +25,7 @@ import { useTheme } from '@/theme/theme-provider';
  */
 export default function AppLayout() {
   const { colors, setPreference } = useTheme();
+  const router = useRouter();
   const bootstrap = useApiQuery('app.bootstrap', []);
   const data = bootstrap.data;
 
@@ -32,6 +34,14 @@ export default function AppLayout() {
   useEffect(() => {
     if (savedTheme) setPreference(savedTheme);
   }, [savedTheme, setPreference]);
+
+  // A link opened while signed out (a household invite) resumes here, once.
+  const ready = Boolean(data) && !data?.entitlements.lockedOut;
+  useEffect(() => {
+    if (!ready) return;
+    const pending = consumePendingLink();
+    if (pending) router.push(pending as Href);
+  }, [ready, router]);
 
   if (!data) {
     return bootstrap.isError ? (
