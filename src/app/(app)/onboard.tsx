@@ -1,5 +1,19 @@
-import { PlaceholderScreen } from '@/components/shell/placeholder-screen';
+import { useState } from 'react';
 
-export default function Route() {
-  return <PlaceholderScreen title="onboard" />;
+import { ReferralWelcome } from '@/components/billing/referral-welcome';
+import { OnboardingScreen } from '@/components/onboarding/onboarding-screen';
+import { consumeJustSignedUp } from '@/providers/sign-up-flag';
+
+/**
+ * The one-time setup a new account goes through before the app opens. An
+ * account created in this launch is first asked, once, for an invite code.
+ */
+export default function OnboardRoute() {
+  const [showReferral, setShowReferral] = useState(() => consumeJustSignedUp());
+
+  if (showReferral) {
+    return <ReferralWelcome onContinue={() => setShowReferral(false)} />;
+  }
+
+  return <OnboardingScreen />;
 }
