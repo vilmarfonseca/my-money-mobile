@@ -1,56 +1,56 @@
-# Welcome to your Expo app 👋
+# MyMoney
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+The native iOS and Android app for [MyMoney](https://mymoneyapp.io), built with Expo and React Native. It is a port of the web app's phone experience (dashboard, spending, income, balance, cards, accounts, goals, calendar, analytics, settings, onboarding) and uses the web app, the `my-money-v2` repository, as its backend.
 
-## Get started
+## Running it locally
 
-1. Install dependencies
+You need the web app running, because it serves the API.
+
+1. In `my-money-v2`, start Postgres and the dev server:
+
+   ```bash
+   bun run db:up && bun run dev
+   ```
+
+2. Here, install dependencies and create your local env file:
 
    ```bash
    npm install
+   cp .env.example .env.local
    ```
 
-2. Start the app
+   Set `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` in `.env.local` to the same publishable key the web app uses.
+
+3. Start the app:
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+   Press `i` for the iOS simulator or `a` for an Android emulator, or scan the QR code with Expo Go.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+In development the app looks for the API on port 3000 of the machine running Metro, which works for simulators and for a phone on the same network. Set `EXPO_PUBLIC_API_URL` to point it somewhere else.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Without signing in
 
-## Get a fresh project
+For UI work you can skip Clerk and use the web app's seeded sample user: start the web app with `MOBILE_API_SAMPLE_USER=1` and set `EXPO_PUBLIC_DEV_SAMPLE_USER=1` in `.env.local`. Both flags are ignored outside development.
 
-When you're ready, run:
+## How it fits together
+
+- `src/app/` holds the routes (Expo Router), `src/components/` the UI, `src/api/` the API client, `src/theme/` the design tokens.
+- `src/lib/` is **synced from the web repo**: translations, formatters and pure calculations as source, and the API's types as declarations. Refresh it with:
+
+  ```bash
+  npm run sync:web
+  ```
+
+  It expects `my-money-v2` checked out next to this repository (or `WEB_REPO=/path/to/it`).
+
+See `AGENTS.md` for the conventions.
+
+## Checks
 
 ```bash
-npm run reset-project
+npm run lint
+npm run typecheck
 ```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
