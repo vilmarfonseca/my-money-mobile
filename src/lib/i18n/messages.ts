@@ -661,6 +661,10 @@ export const enUSMessages = {
       },
     },
   },
+  mobileHandoff: {
+    failed:
+      "This link has expired or was already used. Close this window and try again from the app.",
+  },
   pwa: {
     installTitle: "Install MyMoney",
     installBody: "Tap the Share button, then “Add to Home Screen”.",
@@ -3294,6 +3298,10 @@ export const ptBRMessages: Messages = {
         goals: "metas",
       },
     },
+  },
+  mobileHandoff: {
+    failed:
+      "Este link expirou ou já foi usado. Feche esta janela e tente de novo pelo app.",
   },
   pwa: {
     installTitle: "Instale o MyMoney",

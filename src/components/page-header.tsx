@@ -6,6 +6,7 @@ import { View, type StyleProp, type ViewStyle } from 'react-native';
 import { IconButton } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { useI18n } from '@/lib/i18n/provider';
+import type { ColorToken } from '@/theme/tokens';
 
 type PageHeaderProps = {
   /** Controls stacked under the bar (period filter, buttons). */
@@ -19,6 +20,8 @@ type PageHeaderProps = {
   /** Fallback for the subtitle. */
   description?: string;
   title: string;
+  /** Colour of the italic title (the web's `emClassName`); defaults to ink. */
+  emColor?: ColorToken;
   /** Upright text before the italic title ("Spending · Groceries"). */
   titlePrefix?: string;
   style?: StyleProp<ViewStyle>;
@@ -32,6 +35,7 @@ export function PageHeader({
   actions,
   backHref = '/dashboard',
   description,
+  emColor = 'ink1',
   mobileAction,
   mobileSubtitle,
   style,
@@ -53,7 +57,7 @@ export function PageHeader({
         <View style={{ flex: 1 }}>
           <Text font="display" size="3xl" tight numberOfLines={1}>
             {titlePrefix ? `${titlePrefix} ` : ''}
-            <Text font="displayItalic" size="3xl" tight>
+            <Text font="displayItalic" size="3xl" tight color={emColor}>
               {title}
             </Text>
           </Text>

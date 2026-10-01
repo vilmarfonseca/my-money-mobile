@@ -150,9 +150,9 @@ export declare const mobileApi: {
     /** Prices for the plan picker, in the currency the request's country pays. */
     readonly "billing.displayPrices": () => Promise<import("@/lib/billing/display-prices").DisplayPrices>;
     /**
-     * A link that opens one of the web app's hosted flows in a browser, already
-     * signed in as this user: a single-use Clerk ticket, valid for a minute,
-     * that the sign-in page consumes before continuing to `path`.
+     * A link that opens one of the web app's hosted flows in a browser, signed
+     * in as this user: `/mobile/handoff` consumes a single-use Clerk ticket,
+     * valid for a minute, and continues to `path`.
      */
     readonly "web.handoffUrl": (path: string) => Promise<{
         url: string;

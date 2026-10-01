@@ -12,6 +12,9 @@ export type ToneColors = { bg: string; border: string; fg: string };
 /** Tailwind's default palette, for the families and shades the web app uses. */
 const tailwind: Record<string, Record<string, string>> = {
   slate: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 900: '#0f172a', 950: '#020617' },
+  gray: { 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 900: '#111827', 950: '#030712' },
+  zinc: { 50: '#fafafa', 100: '#f4f4f5', 200: '#e4e4e7', 300: '#d4d4d8', 900: '#18181b', 950: '#09090b' },
+  neutral: { 50: '#fafafa', 100: '#f5f5f5', 200: '#e5e5e5', 300: '#d4d4d4', 900: '#171717', 950: '#0a0a0a' },
   stone: { 50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4', 300: '#d6d3d1', 900: '#1c1917', 950: '#0c0a09' },
   red: { 50: '#fef2f2', 100: '#fee2e2', 200: '#fecaca', 300: '#fca5a5', 900: '#7f1d1d', 950: '#450a0a' },
   orange: { 50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa', 300: '#fdba74', 900: '#7c2d12', 950: '#431407' },
@@ -85,10 +88,20 @@ function semantic(name: string, colors: ThemeColors): string | undefined {
 }
 
 function lookup(name: string, colors: ThemeColors): string | undefined {
-  const known = semantic(name, colors);
-  if (known) return known;
-  const match = /^([a-z]+)-(\d{2,3})$/.exec(name);
-  return match ? tailwind[match[1]]?.[match[2]] : undefined;
+  // Tailwind's opacity modifier: `warning/10` is the colour at 10% alpha.
+  const [base, opacity] = name.split('/');
+  const known = semantic(base, colors);
+  const match = /^([a-z]+)-(\d{2,3})$/.exec(base);
+  const color = known ?? (match ? tailwind[match[1]]?.[match[2]] : undefined);
+  if (!color || !opacity) return color;
+  return withAlpha(color, Number(opacity) / 100);
+}
+
+/** A colour at the given opacity; colours that are not hex are returned as-is. */
+export function withAlpha(color: string, alpha: number): string {
+  if (!HEX_COLOR.test(color)) return color;
+  const [r, g, b] = hexChannels(color);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 /**

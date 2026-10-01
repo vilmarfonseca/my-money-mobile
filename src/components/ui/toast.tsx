@@ -8,16 +8,17 @@ import { useTheme } from '@/theme/theme-provider';
 import { radius, shadows } from '@/theme/tokens';
 
 type ToastKind = 'success' | 'error' | 'message';
-type ToastItem = { id: number; kind: ToastKind; text: string };
+type ToastOptions = { description?: string };
+type ToastItem = { description?: string; id: number; kind: ToastKind; text: string };
 
 const listeners = new Set<(item: ToastItem | null) => void>();
 let current: ToastItem | null = null;
 let nextId = 1;
 let timer: ReturnType<typeof setTimeout> | null = null;
 
-function show(kind: ToastKind, text: string) {
+function show(kind: ToastKind, text: string, options?: ToastOptions) {
   if (timer) clearTimeout(timer);
-  current = { id: nextId++, kind, text };
+  current = { description: options?.description, id: nextId++, kind, text };
   listeners.forEach((listener) => listener(current));
   timer = setTimeout(dismiss, kind === 'error' ? 5000 : 3200);
 }
@@ -31,9 +32,9 @@ function dismiss() {
 
 /** Same call shape as the web app's `sonner`: `toast.success(...)`. */
 export const toast = {
-  success: (text: string) => show('success', text),
-  error: (text: string) => show('error', text),
-  message: (text: string) => show('message', text),
+  success: (text: string, options?: ToastOptions) => show('success', text, options),
+  error: (text: string, options?: ToastOptions) => show('error', text, options),
+  message: (text: string, options?: ToastOptions) => show('message', text, options),
   dismiss,
 };
 
@@ -80,9 +81,16 @@ export function ToastViewport() {
             boxShadow: shadows.lg,
           }}>
           <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: accent }} />
-          <Text size="sm" font="sansMedium" style={{ flex: 1 }}>
-            {item.text}
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text size="sm" font="sansMedium">
+              {item.text}
+            </Text>
+            {item.description ? (
+              <Text size="xs" color="ink3">
+                {item.description}
+              </Text>
+            ) : null}
+          </View>
         </Pressable>
       </Animated.View>
     </View>

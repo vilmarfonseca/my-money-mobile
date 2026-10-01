@@ -1,6 +1,6 @@
 {
   "source": "my-money-v2",
-  "commit": "652300f",
+  "commit": "652300f+dirty",
   "files": [
     "account/account-actions.d.ts",
     "account/deletion-reasons.ts",
@@ -59,6 +59,7 @@
     "integrations/integration-actions.d.ts",
     "integrations/integration-queries.d.ts",
     "mobile/api.d.ts",
+    "mobile/handoff.ts",
     "mobile/wire.ts",
     "onboarding/onboarding-actions.d.ts",
     "onboarding/onboarding-queries.d.ts",

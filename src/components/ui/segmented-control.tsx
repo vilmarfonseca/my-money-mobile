@@ -1,6 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { Text } from '@/components/ui/text';
 import { useTheme } from '@/theme/theme-provider';
@@ -45,9 +45,17 @@ export function SegmentedControl<T extends string = string>({
     options.findIndex((option) => option.value === value),
   );
 
-  const thumb = useAnimatedStyle(() => ({
-    transform: [{ translateX: withSpring(index * segment, { stiffness: 360, damping: 30 }) }],
-  }));
+  // The thumb's slot, as a fraction-free index: it starts on the active
+  // option (no slide-in on mount) and springs to the next one on change.
+  const position = useSharedValue(index);
+  useEffect(() => {
+    position.value = withSpring(index, { stiffness: 360, damping: 30 });
+  }, [index, position]);
+
+  const thumb = useAnimatedStyle(
+    () => ({ transform: [{ translateX: position.value * segment }] }),
+    [segment],
+  );
 
   return (
     <View
@@ -100,10 +108,17 @@ export function SegmentedControl<T extends string = string>({
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 6,
-                paddingHorizontal: 6,
+                paddingHorizontal: 4,
               }}>
               {option.icon?.({ color, size: 16 })}
-              <Text font="sansMedium" size={size === 'xl' ? 'sm' : 'xs'} color={color} numberOfLines={1}>
+              <Text
+                font="sansMedium"
+                size={size === 'xl' ? 'sm' : 'xs'}
+                color={color}
+                numberOfLines={1}
+                // Four options on a phone leave a long label a few pixels short.
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}>
                 {option.label}
               </Text>
             </Pressable>
