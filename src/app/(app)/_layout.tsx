@@ -64,6 +64,7 @@ export default function AppLayout() {
             headerShown: false,
             contentStyle: { backgroundColor: colors.canvas },
           }}>
+          <Stack.Screen name="index" />
           <Stack.Protected guard={!locked && !needsOnboarding}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen
