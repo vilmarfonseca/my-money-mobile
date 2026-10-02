@@ -101,6 +101,12 @@ function MenuGroup({ children, label }: { children: ReactNode; label: string }) 
   );
 }
 
+/**
+ * The two actions share a row while both labels fit; a locale with longer
+ * copy stacks them full width instead of truncating.
+ */
+const menuActionStyle = { flexGrow: 1, flexShrink: 0 } as const;
+
 function getInitials(value: string) {
   const parts = value.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return 'MM';
@@ -216,12 +222,12 @@ export default function MenuScreen() {
         <Button
           size="xl"
           shape="rounded"
-          style={{ flex: 1 }}
+          style={menuActionStyle}
           label={messages.common.addTransaction}
           icon={(props) => <Plus {...props} />}
           onPress={() => router.push('/transactions/new')}
         />
-        <ImportExportButton size="xl" shape="rounded" style={{ flex: 1 }} />
+        <ImportExportButton size="xl" shape="rounded" style={menuActionStyle} />
       </View>
 
       <MenuGroup label={messages.common.workspace}>
