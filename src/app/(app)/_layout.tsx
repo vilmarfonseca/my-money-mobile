@@ -1,17 +1,21 @@
 import { type Href, Stack, useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
+import { callApi } from '@/api/client';
 import { useApiQuery } from '@/api/hooks';
 import { PaymentIssueDialog } from '@/components/billing/payment-issue-dialog';
 import { BootScreen } from '@/components/boot-screen';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
+import { localeCurrency } from '@/lib/i18n/config';
 import { I18nProvider, useI18n } from '@/lib/i18n/provider';
+import type { CurrencyCode } from '@/lib/settings/settings-queries';
 import { AppDataProvider } from '@/providers/app-data-provider';
 import { useSession } from '@/providers/auth-provider';
 import { consumePendingLink } from '@/providers/pending-link';
+import { consumeSignUpLocale } from '@/providers/sign-up-flag';
 import { useTheme } from '@/theme/theme-provider';
 
 /**
@@ -35,6 +39,29 @@ export default function AppLayout() {
     if (savedTheme) setPreference(savedTheme);
   }, [savedTheme, setPreference]);
 
+  // An account created in this launch adopts the language picked on the
+  // sign-in screen, with its currency, as a web sign-up adopts the language
+  // cookie. The app waits for it, so it opens in that language.
+  const [signUpLocale] = useState(consumeSignUpLocale);
+  const [localeSaved, setLocaleSaved] = useState(false);
+  const savedLocale = data?.displayPreferences.locale;
+  const adoptLocale =
+    signUpLocale !== null && savedLocale !== undefined && savedLocale !== signUpLocale;
+  const refetchBootstrap = bootstrap.refetch;
+  useEffect(() => {
+    if (!adoptLocale || localeSaved) return;
+    Promise.all([
+      callApi('settings.saveDefault', { key: 'language', value: signUpLocale }),
+      callApi('settings.saveDefault', {
+        key: 'currency',
+        value: localeCurrency(signUpLocale) as CurrencyCode,
+      }),
+    ])
+      .catch(() => {})
+      .then(() => refetchBootstrap())
+      .finally(() => setLocaleSaved(true));
+  }, [adoptLocale, localeSaved, refetchBootstrap, signUpLocale]);
+
   // A link opened while signed out (a household invite) resumes here, once.
   const ready = Boolean(data) && !data?.entitlements.lockedOut;
   useEffect(() => {
@@ -43,7 +70,7 @@ export default function AppLayout() {
     if (pending) router.push(pending as Href);
   }, [ready, router]);
 
-  if (!data) {
+  if (!data || (adoptLocale && !localeSaved)) {
     return bootstrap.isError ? (
       <BootstrapError message={bootstrap.error.message} onRetry={() => bootstrap.refetch()} />
     ) : (

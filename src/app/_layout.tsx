@@ -4,7 +4,6 @@ import {
   GeistMono_600SemiBold,
 } from '@expo-google-fonts/geist-mono';
 import { useFonts } from 'expo-font';
-import { getLocales } from 'expo-localization';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -14,16 +13,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { BootScreen } from '@/components/boot-screen';
 import { ToastViewport } from '@/components/ui/toast';
-import { localeCurrency, normalizeLocale } from '@/lib/i18n/config';
-import { I18nProvider } from '@/lib/i18n/provider';
 import { AuthProvider, useSession } from '@/providers/auth-provider';
 import { QueryProvider } from '@/providers/query-provider';
+import { SignedOutLocaleProvider } from '@/providers/signed-out-locale';
 import { ThemeProvider, useTheme } from '@/theme/theme-provider';
 
 SplashScreen.preventAutoHideAsync();
-
-/** Language of the signed-out screens: the device's, when the app speaks it. */
-const deviceLocale = normalizeLocale(getLocales()[0]?.languageTag?.startsWith('pt') ? 'pt-BR' : 'en-US');
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -46,10 +41,10 @@ export default function RootLayout() {
         <ThemeProvider>
           <QueryProvider>
             <AuthProvider>
-              <I18nProvider locale={deviceLocale} currency={localeCurrency(deviceLocale)}>
+              <SignedOutLocaleProvider>
                 <RootNavigator />
                 <ToastViewport />
-              </I18nProvider>
+              </SignedOutLocaleProvider>
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
