@@ -1,6 +1,6 @@
-import { AlertCircle, Landmark, PiggyBank, Star } from 'lucide-react-native';
-import { useState } from 'react';
-import { View } from 'react-native';
+import { Landmark, PiggyBank, Star } from 'lucide-react-native';
+import { useImperativeHandle, useRef, useState, type Ref } from 'react';
+import { TextInput, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { useApiAction } from '@/api/hooks';
@@ -13,13 +13,18 @@ import {
 } from '@/components/accounts/savings-fields';
 import {
   obAttempt,
+  ObAddAnotherButton,
   ObAddedRow,
   ObDashedButton,
   ObEmptyNote,
+  ObListStatus,
   ObMiniButton,
   ObOptionCard,
   ObRemoveButton,
   obToneGradients,
+  useObDraftErrors,
+  type OnboardingStepCommit,
+  type OnboardingStepHandle,
 } from '@/components/onboarding/onboarding-ui';
 import { CurrencyInput, currencyDigitsToAmount } from '@/components/ui/currency-input';
 import { FieldLabel, FormField } from '@/components/ui/form-field';
@@ -46,15 +51,15 @@ export type OnboardingBankSummary = {
 type OnboardingStepBanksProps = {
   banks: OnboardingBankSummary[];
   onBanksChange: (banks: OnboardingBankSummary[]) => void;
-  /** Bumped by the flow when Continue is pressed with nothing added. */
-  nudgeSignal: number;
+  /** Lets Continue save the open form (see `OnboardingStepHandle`). */
+  ref?: Ref<OnboardingStepHandle>;
 };
 
 const paneIn = FadeInDown.duration(durations.base).withInitialValues({
   transform: [{ translateY: 12 }],
 });
 
-export function OnboardingStepBanks({ banks, nudgeSignal, onBanksChange }: OnboardingStepBanksProps) {
+export function OnboardingStepBanks({ banks, onBanksChange, ref }: OnboardingStepBanksProps) {
   const { locale, messages, formatCurrency } = useI18n();
   const { colors } = useTheme();
   const isPtBR = locale === 'pt-BR';
@@ -70,22 +75,25 @@ export function OnboardingStepBanks({ banks, nudgeSignal, onBanksChange }: Onboa
   const [checkingDigits, setCheckingDigits] = useState('');
   const [savingsDrafts, setSavingsDrafts] = useState<SavingsDraft[]>([{ ...emptySavingsDraft }]);
   const [isPrimary, setIsPrimary] = useState(true);
-  const [showNudge, setShowNudge] = useState(false);
-
-  // The flow bumps this counter when Continue is pressed too early.
-  const [seenNudge, setSeenNudge] = useState(nudgeSignal);
-  if (seenNudge !== nudgeSignal) {
-    setSeenNudge(nudgeSignal);
-    setShowNudge(true);
-  }
+  const { hideErrors, reveal, showErrors } = useObDraftErrors();
+  const nameRef = useRef<TextInput>(null);
+  const checkingRef = useRef<TextInput>(null);
 
   const hasChecking = checkingDigits !== '';
   // Only entries with a balance become accounts; a blank row is the form's
   // invitation to add one.
   const filledSavings = savingsDrafts.filter((draft) => draft.balanceDigits !== '');
   const rateValid = filledSavings.every(isSavingsRateValid);
-  const formValid = name.trim().length > 0 && (hasChecking || filledSavings.length > 0);
+  const missingName = name.trim().length === 0;
+  const missingBalance = !hasChecking && filledSavings.length === 0;
+  const formValid = !missingName && !missingBalance;
+  // Anything typed counts as a bank in progress, which Continue will save.
+  const hasDraft = !missingName || nickname.trim().length > 0 || !missingBalance;
   const isFirstBank = banks.length === 0;
+
+  /** Flags the missing fields and brings the first one into view. */
+  const flagMissing = () =>
+    reveal(missingName ? nameRef : missingBalance ? checkingRef : undefined);
 
   const resetForm = () => {
     setName('');
@@ -93,15 +101,11 @@ export function OnboardingStepBanks({ banks, nudgeSignal, onBanksChange }: Onboa
     setCheckingDigits('');
     setSavingsDrafts([{ ...emptySavingsDraft }]);
     setIsPrimary(false);
-    setShowNudge(false);
+    hideErrors();
   };
 
-  const submit = async () => {
-    if (!formValid || !rateValid || isPending) {
-      setShowNudge(true);
-      return;
-    }
-
+  /** Creates the bank in the form; false when the server refused it. */
+  const save = async (): Promise<boolean> => {
     const tone = bankToneAt(banks.length);
     const makePrimary = isFirstBank || isPrimary;
     const checking = hasChecking ? currencyDigitsToAmount(checkingDigits) : null;
@@ -122,10 +126,10 @@ export function OnboardingStepBanks({ banks, nudgeSignal, onBanksChange }: Onboa
         savings,
       }),
     );
-    if (!result) return;
+    if (!result) return false;
     if (!result.ok) {
       toast.error(result.message);
-      return;
+      return false;
     }
 
     toast.success(t.bankAdded);
@@ -142,7 +146,30 @@ export function OnboardingStepBanks({ banks, nudgeSignal, onBanksChange }: Onboa
       },
     ]);
     resetForm();
+    return true;
   };
+
+  const submit = () => {
+    if (isPending) return;
+    if (!formValid || !rateValid) {
+      flagMissing();
+      return;
+    }
+    void save();
+  };
+
+  // Continue saves a filled-in bank instead of leaving it behind, and this
+  // step needs at least one bank before the wizard moves on.
+  useImperativeHandle(ref, () => ({
+    commit: async (): Promise<OnboardingStepCommit> => {
+      if (!hasDraft && !isFirstBank) return 'empty';
+      if (!formValid || !rateValid) {
+        flagMissing();
+        return 'invalid';
+      }
+      return (await save()) ? 'saved' : 'failed';
+    },
+  }));
 
   const makePrimary = async (index: number) => {
     const bank = banks[index];
@@ -180,10 +207,12 @@ export function OnboardingStepBanks({ banks, nudgeSignal, onBanksChange }: Onboa
       <View style={{ gap: 16 }}>
         <FormField label={messages.accountsPage.bank}>
           <Input
+            ref={nameRef}
             value={name}
             onChangeText={setName}
             placeholder={t.bankNamePlaceholder}
             maxLength={40}
+            invalid={showErrors && missingName}
           />
         </FormField>
         <FormField label={messages.accountsPage.nicknameLabel} optional>
@@ -196,9 +225,11 @@ export function OnboardingStepBanks({ banks, nudgeSignal, onBanksChange }: Onboa
         </FormField>
         <FormField label={t.checkingBalance}>
           <CurrencyInput
+            ref={checkingRef}
             accessibilityLabel={t.checkingBalance}
             value={checkingDigits}
             onValueChange={setCheckingDigits}
+            invalid={showErrors && missingBalance}
           />
         </FormField>
 
@@ -330,24 +361,25 @@ export function OnboardingStepBanks({ banks, nudgeSignal, onBanksChange }: Onboa
             onCheckedChange={setIsPrimary}
           />
         </View>
-
-        <ObDashedButton
-          label={t.addAccount}
-          loading={createBank.pending}
-          disabled={isPending}
-          onPress={submit}
-        />
       </View>
 
-      {showNudge && !formValid ? (
-        <Animated.View
-          entering={paneIn}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 }}>
-          <AlertCircle size={16} color={colors.negativeFg} />
-          <Text size="xs" color="negativeFg" style={{ flex: 1 }}>
-            {t.acctNudge}
-          </Text>
-        </Animated.View>
+      <ObAddAnotherButton
+        label={t.addAnotherAccount}
+        disabled={!formValid || !rateValid || isPending}
+        pending={createBank.pending}
+        onPress={submit}
+      />
+
+      {showErrors && (!formValid || !rateValid) ? (
+        <ObListStatus tone="error">
+          {isFirstBank ? t.acctNudge : t.acctDraftIncomplete}
+        </ObListStatus>
+      ) : hasDraft ? (
+        formValid && rateValid ? (
+          <ObListStatus tone="info">{t.continueSavesAccount}</ObListStatus>
+        ) : null
+      ) : !isFirstBank ? (
+        <ObListStatus tone="success">{t.acctReady}</ObListStatus>
       ) : null}
 
       <View style={{ marginTop: 20 }}>

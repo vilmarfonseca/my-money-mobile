@@ -1,16 +1,20 @@
 import { Car, Home, Laptop, Send, ShieldCheck, Target, type LucideIcon } from 'lucide-react-native';
-import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useImperativeHandle, useRef, useState, type Ref } from 'react';
+import { Pressable, TextInput, View } from 'react-native';
 
 import { useApiAction } from '@/api/hooks';
 import {
   nearestColorOption,
   obAttempt,
+  ObAddAnotherButton,
   ObAddedRow,
-  ObDashedButton,
   ObEmptyNote,
+  ObListStatus,
   ObRemoveButton,
   obToneGradients,
+  useObDraftErrors,
+  type OnboardingStepCommit,
+  type OnboardingStepHandle,
 } from '@/components/onboarding/onboarding-ui';
 import { ColorPickerButton } from '@/components/ui/color-picker-button';
 import { CurrencyInput, currencyDigitsToAmount } from '@/components/ui/currency-input';
@@ -61,9 +65,11 @@ export type OnboardingGoalSummary = {
 type OnboardingStepGoalsProps = {
   goals: OnboardingGoalSummary[];
   onGoalsChange: (goals: OnboardingGoalSummary[]) => void;
+  /** Lets Continue save the open form (see `OnboardingStepHandle`). */
+  ref?: Ref<OnboardingStepHandle>;
 };
 
-export function OnboardingStepGoals({ goals, onGoalsChange }: OnboardingStepGoalsProps) {
+export function OnboardingStepGoals({ goals, onGoalsChange, ref }: OnboardingStepGoalsProps) {
   const { locale, messages, formatCurrency } = useI18n();
   const { colors } = useTheme();
   const t = messages.onboarding;
@@ -77,8 +83,19 @@ export function OnboardingStepGoals({ goals, onGoalsChange }: OnboardingStepGoal
   const [targetDate, setTargetDate] = useState('');
   const [color, setColor] = useState('#7c3aed');
   const [icon, setIcon] = useState<GoalIcon>('reserve');
+  const { hideErrors, reveal, showErrors } = useObDraftErrors();
+  const nameRef = useRef<TextInput>(null);
+  const targetRef = useRef<TextInput>(null);
 
-  const canSubmit = name.trim().length > 0 && currencyDigitsToAmount(targetDigits) > 0 && !isPending;
+  const missingName = name.trim().length === 0;
+  const missingTarget = currencyDigitsToAmount(targetDigits) <= 0;
+  const formValid = !missingName && !missingTarget;
+  // Anything typed (or a suggestion picked) is a goal in progress, which
+  // Continue will save.
+  const hasDraft = !missingName || targetDigits !== '' || targetDate !== '';
+
+  /** Flags the missing fields and brings the first one into view. */
+  const flagMissing = () => reveal(missingName ? nameRef : targetRef);
 
   const applySuggestion = (suggestion: Suggestion) => {
     setName(t.suggestions[suggestion.key]);
@@ -86,8 +103,8 @@ export function OnboardingStepGoals({ goals, onGoalsChange }: OnboardingStepGoal
     setIcon(suggestion.goalIcon);
   };
 
-  const submit = async () => {
-    if (!canSubmit) return;
+  /** Creates the goal in the form; false when the server refused it. */
+  const save = async (): Promise<boolean> => {
     const tone = nearestColorOption(color, toneOptions);
     const target = currencyDigitsToAmount(targetDigits);
 
@@ -102,10 +119,10 @@ export function OnboardingStepGoals({ goals, onGoalsChange }: OnboardingStepGoal
         targetDate: targetDate || null,
       }),
     );
-    if (!result) return;
+    if (!result) return false;
     if (!result.ok) {
       toast.error(result.message);
-      return;
+      return false;
     }
 
     toast.success(t.goalAdded);
@@ -117,7 +134,31 @@ export function OnboardingStepGoals({ goals, onGoalsChange }: OnboardingStepGoal
     setTargetDigits('');
     setTargetDate('');
     setIcon('reserve');
+    hideErrors();
+    return true;
   };
+
+  const submit = () => {
+    if (isPending) return;
+    if (!formValid) {
+      flagMissing();
+      return;
+    }
+    void save();
+  };
+
+  // Continue saves a filled-in goal instead of dropping it; an empty form
+  // just moves on, since goals are optional.
+  useImperativeHandle(ref, () => ({
+    commit: async (): Promise<OnboardingStepCommit> => {
+      if (!hasDraft) return 'empty';
+      if (!formValid) {
+        flagMissing();
+        return 'invalid';
+      }
+      return (await save()) ? 'saved' : 'failed';
+    },
+  }));
 
   const removeGoal = async (index: number) => {
     const goal = goals[index];
@@ -179,18 +220,22 @@ export function OnboardingStepGoals({ goals, onGoalsChange }: OnboardingStepGoal
         }}>
         <FormField label={t.goalName}>
           <Input
+            ref={nameRef}
             value={name}
             onChangeText={setName}
             placeholder={t.goalNamePlaceholder}
             maxLength={60}
+            invalid={showErrors && missingName}
             containerStyle={{ backgroundColor: colors.surface1 }}
           />
         </FormField>
         <FormField label={t.goalTarget}>
           <CurrencyInput
+            ref={targetRef}
             accessibilityLabel={t.goalTarget}
             value={targetDigits}
             onValueChange={setTargetDigits}
+            invalid={showErrors && missingTarget}
             containerStyle={{ backgroundColor: colors.surface1 }}
           />
         </FormField>
@@ -208,14 +253,22 @@ export function OnboardingStepGoals({ goals, onGoalsChange }: OnboardingStepGoal
         </View>
       </View>
 
-      <View style={{ marginTop: 14 }}>
-        <ObDashedButton
-          label={t.addGoal}
-          loading={createGoal.pending}
-          disabled={!canSubmit}
-          onPress={submit}
-        />
-      </View>
+      <ObAddAnotherButton
+        label={t.addAnotherGoal}
+        disabled={!formValid || isPending}
+        pending={createGoal.pending}
+        onPress={submit}
+      />
+
+      {showErrors && !formValid ? (
+        <ObListStatus tone="error">{t.draftIncomplete}</ObListStatus>
+      ) : hasDraft ? (
+        formValid ? (
+          <ObListStatus tone="info">{t.continueSavesGoal}</ObListStatus>
+        ) : null
+      ) : goals.length > 0 ? (
+        <ObListStatus tone="success">{t.goalReady}</ObListStatus>
+      ) : null}
 
       <View style={{ marginTop: 20 }}>
         <FieldLabel>{t.yourGoals}</FieldLabel>

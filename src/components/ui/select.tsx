@@ -26,6 +26,8 @@ type SelectProps<T extends string> = {
   /** Heading of the option sheet; defaults to the placeholder. */
   title?: string;
   disabled?: boolean;
+  /** Flags the field as missing or wrong. */
+  invalid?: boolean;
   accessibilityLabel?: string;
   /** Custom rendering of the selected value inside the field. */
   renderValue?: (option: SelectOption<T>) => ReactNode;
@@ -39,6 +41,7 @@ type SelectProps<T extends string> = {
 export function Select<T extends string = string>({
   accessibilityLabel,
   disabled,
+  invalid,
   onValueChange,
   options,
   placeholder,
@@ -67,7 +70,7 @@ export function Select<T extends string = string>({
             paddingHorizontal: 14,
             borderRadius: radius.sm,
             borderWidth: 1,
-            borderColor: colors.lineStrong,
+            borderColor: invalid ? colors.negative : colors.lineStrong,
             backgroundColor: colors.control,
             opacity: disabled ? 0.5 : 1,
           },

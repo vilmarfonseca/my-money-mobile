@@ -1,8 +1,24 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Check, Plus, X, type LucideIcon } from 'lucide-react-native';
-import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, View } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import {
+  AlertCircle,
+  Check,
+  CircleCheck,
+  Info,
+  Plus,
+  X,
+  type LucideIcon,
+} from 'lucide-react-native';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
+import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
 import { Text } from '@/components/ui/text';
 import { toast } from '@/components/ui/toast';
@@ -159,6 +175,147 @@ export function ObOptionCard({
 }
 
 /* ------------------------------------------------------------------------ */
+/* List steps (accounts / goals / cards): Continue saves the open form       */
+/* ------------------------------------------------------------------------ */
+
+/**
+ * What a list step did with its open form when the wizard asked to move on:
+ * nothing to save, saved it as a new item, stopped on missing fields, or the
+ * server refused it. Only "empty" and "saved" let the wizard advance.
+ */
+export type OnboardingStepCommit = 'empty' | 'saved' | 'invalid' | 'failed';
+
+/** Handle a list step hands the wizard so Continue can save its open form. */
+export type OnboardingStepHandle = {
+  commit: () => Promise<OnboardingStepCommit>;
+};
+
+/** The wizard's scroll view and its content, so a step can scroll to a field. */
+export const ObScrollContext = createContext<{
+  scroll: RefObject<ScrollView | null>;
+  content: RefObject<View | null>;
+} | null>(null);
+
+/** A field a step can point at: a text field (also focused) or its wrapper. */
+export type ObFieldRef = RefObject<TextInput | View | null>;
+
+/**
+ * Field highlighting for a list step's form. `reveal(field)` turns the
+ * highlights on and, once they render, scrolls the first flagged field into
+ * view and focuses it, so a user who pressed Continue lands on what's missing.
+ */
+export function useObDraftErrors() {
+  const frame = useContext(ObScrollContext);
+  const [showErrors, setShowErrors] = useState(false);
+  const [revealCount, setRevealCount] = useState(0);
+  const target = useRef<ObFieldRef | null>(null);
+
+  useEffect(() => {
+    if (revealCount === 0) return;
+    const field = target.current?.current;
+    const scroll = frame?.scroll.current;
+    const content = frame?.content.current;
+    if (!field) return;
+    if (scroll && content) {
+      field.measureLayout(
+        content,
+        (_x, y) => scroll.scrollTo({ y: Math.max(y - 120, 0), animated: true }),
+        () => {},
+      );
+    }
+    if (field instanceof TextInput) field.focus();
+  }, [frame, revealCount]);
+
+  return {
+    showErrors,
+    hideErrors: () => setShowErrors(false),
+    reveal: (field?: ObFieldRef) => {
+      target.current = field ?? null;
+      setShowErrors(true);
+      setRevealCount((count) => count + 1);
+    },
+  };
+}
+
+/** "Save and add another": the secondary action of a list step. */
+export function ObAddAnotherButton({
+  disabled,
+  label,
+  onPress,
+  pending,
+}: {
+  disabled: boolean;
+  label: string;
+  onPress: () => void;
+  pending: boolean;
+}) {
+  const { colors } = useTheme();
+  const inactive = disabled || pending;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: inactive, busy: pending }}
+      disabled={inactive}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        height: 48,
+        marginTop: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingHorizontal: 16,
+        borderRadius: radius['2xl'],
+        backgroundColor: pressed ? colors.accentSoftHover : colors.accentSoft,
+        opacity: inactive ? 0.5 : 1,
+      })}>
+      {pending ? (
+        <ActivityIndicator size="small" color={colors.accentSoftFg} />
+      ) : (
+        <Plus size={16} color={colors.accentSoftFg} />
+      )}
+      <Text font="sansMedium" size="sm" color="accentSoftFg">
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+const statusIcons = {
+  error: AlertCircle,
+  info: Info,
+  success: CircleCheck,
+} as const;
+
+/** One-line state of a list step under its form: what Continue will do. */
+export function ObListStatus({
+  children,
+  tone,
+}: {
+  children: string;
+  tone: keyof typeof statusIcons;
+}) {
+  const { colors } = useTheme();
+  const Icon = statusIcons[tone];
+  const color =
+    tone === 'error' ? colors.negativeFg : tone === 'success' ? colors.positiveFg : colors.ink3;
+  return (
+    <Animated.View
+      accessibilityRole={tone === 'error' ? 'alert' : 'text'}
+      accessibilityLiveRegion="polite"
+      entering={FadeInDown.duration(durations.base).withInitialValues({
+        transform: [{ translateY: 12 }],
+      })}
+      style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 10 }}>
+      <Icon size={16} color={color} style={{ marginTop: 1 }} />
+      <Text size="xs" color={color} style={{ flex: 1, lineHeight: 19 }}>
+        {children}
+      </Text>
+    </Animated.View>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
 /* Added-item row (accounts / goals / cards lists)                           */
 /* ------------------------------------------------------------------------ */
 
@@ -264,7 +421,11 @@ export function ObMiniButton({
         justifyContent: 'center',
         borderWidth: 1,
         borderColor: active ? palette.plum500 : colors.controlBorder,
-        backgroundColor: active ? colors.accentSoft : pressed ? colors.controlHover : colors.control,
+        backgroundColor: active
+          ? colors.accentSoft
+          : pressed
+            ? colors.controlHover
+            : colors.control,
         opacity: disabled ? 0.5 : 1,
       })}>
       {icon({ color: active ? colors.accentSoftFg : colors.ink2, size: 16 })}

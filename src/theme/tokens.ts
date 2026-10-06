@@ -58,6 +58,7 @@ const light = {
   accentHover: '#6d28d9',
   accentFg: '#ffffff',
   accentSoft: '#ebe1ff',
+  accentSoftHover: '#e0d0ff',
   accentSoftFg: '#5b21b6',
   accentTint: '#f5f0ff',
 
@@ -113,6 +114,7 @@ const dark: ThemeColors = {
   accentHover: '#4c1d95',
   accentFg: '#ffffff',
   accentSoft: 'rgba(184, 157, 255, 0.15)',
+  accentSoftHover: 'rgba(184, 157, 255, 0.22)',
   accentSoftFg: '#d6c2ff',
   accentTint: 'rgba(184, 157, 255, 0.08)',
 

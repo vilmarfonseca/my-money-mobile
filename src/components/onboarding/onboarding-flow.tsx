@@ -14,8 +14,8 @@ import {
   Target,
   type LucideIcon,
 } from 'lucide-react-native';
-import { useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { useRef, useState, type RefObject } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import Animated, {
   FadeInDown,
   FadeInUp,
@@ -52,6 +52,7 @@ import {
   type OnboardingDataChoice,
 } from '@/components/onboarding/onboarding-step-import';
 import { OnboardingStepLook } from '@/components/onboarding/onboarding-step-look';
+import { ObScrollContext, type OnboardingStepHandle } from '@/components/onboarding/onboarding-ui';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
@@ -141,8 +142,12 @@ export function OnboardingFlow({
   const [cards, setCards] = useState<OnboardingCardSummary[]>(resume.cards);
   const [dataChoice, setDataChoice] = useState<OnboardingDataChoice>('fresh');
   const [phase, setPhase] = useState<Phase>('form');
-  const [nudgeSignal, setNudgeSignal] = useState(0);
+  const [isAdvancing, setAdvancing] = useState(false);
   const shake = useSharedValue(0);
+  // The list steps (banks, goals, cards) hand over their open form here.
+  const stepRef = useRef<OnboardingStepHandle>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const contentRef = useRef<View>(null);
 
   const step1Complete = hasBankAccounts || banks.length > 0;
   const finishing = phase !== 'form';
@@ -157,13 +162,16 @@ export function OnboardingFlow({
       withTiming(0, { duration: 84 }),
     );
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-    setNudgeSignal((signal) => signal + 1);
   };
 
-  const goTo = (target: number) => {
+  /**
+   * `bankJustSaved`: the banks step saved one on the way out, which the
+   * `banks` state in this render does not show yet.
+   */
+  const goTo = (target: number, bankJustSaved = false) => {
     const next = Math.min(Math.max(target, 1), totalSteps);
     if (next === step) return;
-    if (next > 1 && !step1Complete) {
+    if (next > 1 && !step1Complete && !bankJustSaved) {
       rejectLockedNav();
       return;
     }
@@ -206,13 +214,36 @@ export function OnboardingFlow({
     }
   };
 
-  const handleNext = () => {
-    if (step === 1 && !step1Complete) {
-      rejectLockedNav();
+  /**
+   * Moving forward first lets a list step save what is typed in its form, so
+   * a bank, goal or card filled in without pressing "Save and add another" is
+   * not lost (and the required bank step cannot dead-end on it). A form with
+   * missing fields keeps the user on the step, with those fields flagged.
+   * Going back never saves.
+   */
+  const advanceTo = async (target: number) => {
+    if (target <= step) {
+      goTo(target);
       return;
     }
+    if (isAdvancing) return;
+    setAdvancing(true);
+    let result;
+    try {
+      result = (await stepRef.current?.commit()) ?? 'empty';
+    } finally {
+      setAdvancing(false);
+    }
+    if (result === 'invalid' || result === 'failed') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      return;
+    }
+    goTo(target, activeKey === 'banks' && result === 'saved');
+  };
+
+  const handleNext = () => {
     if (step < totalSteps) {
-      goTo(step + 1);
+      void advanceTo(step + 1);
       return;
     }
     void finish();
@@ -237,9 +268,6 @@ export function OnboardingFlow({
     ? `${t.stepWord} ${step} · ${t.kickTags[activeKey]}`
     : `${t.stepWord} ${step}`;
   const isLast = step === totalSteps;
-  // The required step keeps Continue pressable so a press can explain itself
-  // (shake + nudge) instead of doing nothing.
-  const blocked = activeKey === 'banks' && !step1Complete;
 
   const railShake = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
   const cardState = useAnimatedStyle(() => ({
@@ -323,7 +351,7 @@ export function OnboardingFlow({
                         accessibilityLabel={t.steps[key].title}
                         accessibilityState={{ selected: n === step }}
                         hitSlop={{ top: 14, bottom: 14 }}
-                        onPress={() => goTo(n)}
+                        onPress={() => void advanceTo(n)}
                         style={{
                           flex: 1,
                           height: 6,
@@ -338,70 +366,83 @@ export function OnboardingFlow({
             </Animated.View>
 
             {/* Content */}
-            <ScrollView
-              // Each step starts at the top.
-              key={step}
-              style={{ flex: 1 }}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 28, paddingBottom: 20 }}>
-              <Animated.View entering={paneIn}>
-                <View style={{ marginBottom: 20 }}>
-                  <View
-                    style={{
-                      alignSelf: 'flex-start',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 8,
-                      marginBottom: 14,
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: radius.pill,
-                      backgroundColor: colors.accentSoft,
-                    }}>
-                    <ActiveIcon size={14} color={colors.accentSoftFg} />
-                    <Text font="sansMedium" size="xs" color="accentSoftFg" uppercase tracking={0.6}>
-                      {kickLabel}
+            <ObScrollContext value={{ scroll: scrollRef, content: contentRef }}>
+              <ScrollView
+                // Each step starts at the top.
+                key={step}
+                ref={scrollRef}
+                // Steps measure their fields against the content to scroll to them.
+                innerViewRef={contentRef as RefObject<View>}
+                style={{ flex: 1 }}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{
+                  paddingHorizontal: 20,
+                  paddingTop: 28,
+                  paddingBottom: 20,
+                }}>
+                <Animated.View entering={paneIn}>
+                  <View style={{ marginBottom: 20 }}>
+                    <View
+                      style={{
+                        alignSelf: 'flex-start',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8,
+                        marginBottom: 14,
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: radius.pill,
+                        backgroundColor: colors.accentSoft,
+                      }}>
+                      <ActiveIcon size={14} color={colors.accentSoftFg} />
+                      <Text
+                        font="sansMedium"
+                        size="xs"
+                        color="accentSoftFg"
+                        uppercase
+                        tracking={0.6}>
+                        {kickLabel}
+                      </Text>
+                    </View>
+                    <Text
+                      font="display"
+                      size="4xl"
+                      tracking={-0.6}
+                      accessibilityRole="header"
+                      style={{ lineHeight: 42 }}>
+                      {active.lead}{' '}
+                      <Text font="displayItalic" size="4xl" color="ink2" tracking={-0.6}>
+                        {active.em}
+                      </Text>
+                    </Text>
+                    <Text size="sm" color="ink3" style={{ marginTop: 8, lineHeight: 22 }}>
+                      {active.description}
                     </Text>
                   </View>
-                  <Text
-                    font="display"
-                    size="4xl"
-                    tracking={-0.6}
-                    accessibilityRole="header"
-                    style={{ lineHeight: 42 }}>
-                    {active.lead}{' '}
-                    <Text font="displayItalic" size="4xl" color="ink2" tracking={-0.6}>
-                      {active.em}
-                    </Text>
-                  </Text>
-                  <Text size="sm" color="ink3" style={{ marginTop: 8, lineHeight: 22 }}>
-                    {active.description}
-                  </Text>
-                </View>
 
-                {activeKey === 'banks' ? (
-                  <OnboardingStepBanks
-                    banks={banks}
-                    onBanksChange={setBanks}
-                    nudgeSignal={nudgeSignal}
-                  />
-                ) : null}
-                {activeKey === 'household' ? (
-                  <OnboardingStepHousehold household={household} onHouseholdChange={setHousehold} />
-                ) : null}
-                {activeKey === 'goals' ? (
-                  <OnboardingStepGoals goals={goals} onGoalsChange={setGoals} />
-                ) : null}
-                {activeKey === 'cards' ? (
-                  <OnboardingStepCards cards={cards} onCardsChange={setCards} />
-                ) : null}
-                {activeKey === 'data' ? (
-                  <OnboardingStepImport choice={dataChoice} onChoiceChange={setDataChoice} />
-                ) : null}
-                {activeKey === 'look' ? <OnboardingStepLook /> : null}
-              </Animated.View>
-            </ScrollView>
+                  {activeKey === 'banks' ? (
+                    <OnboardingStepBanks ref={stepRef} banks={banks} onBanksChange={setBanks} />
+                  ) : null}
+                  {activeKey === 'household' ? (
+                    <OnboardingStepHousehold
+                      household={household}
+                      onHouseholdChange={setHousehold}
+                    />
+                  ) : null}
+                  {activeKey === 'goals' ? (
+                    <OnboardingStepGoals ref={stepRef} goals={goals} onGoalsChange={setGoals} />
+                  ) : null}
+                  {activeKey === 'cards' ? (
+                    <OnboardingStepCards ref={stepRef} cards={cards} onCardsChange={setCards} />
+                  ) : null}
+                  {activeKey === 'data' ? (
+                    <OnboardingStepImport choice={dataChoice} onChoiceChange={setDataChoice} />
+                  ) : null}
+                  {activeKey === 'look' ? <OnboardingStepLook /> : null}
+                </Animated.View>
+              </ScrollView>
+            </ObScrollContext>
 
             <View
               style={{
@@ -429,7 +470,7 @@ export function OnboardingFlow({
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={t.skipForNow}
-                  disabled={finishing}
+                  disabled={finishing || isAdvancing}
                   hitSlop={6}
                   onPress={() => goTo(step + 1)}
                   style={({ pressed }) => ({
@@ -445,14 +486,22 @@ export function OnboardingFlow({
               ) : null}
               <Button
                 label={isLast ? (finishing ? `${t.finishing}…` : t.finish) : t.continue}
-                iconRight={(props) => (isLast ? <Check {...props} /> : <ArrowRight {...props} />)}
-                disabled={finishing}
-                accessibilityState={{ disabled: finishing || blocked }}
+                iconRight={(props) =>
+                  isLast ? (
+                    <Check {...props} />
+                  ) : isAdvancing ? (
+                    <ActivityIndicator size="small" color={props.color} />
+                  ) : (
+                    <ArrowRight {...props} />
+                  )
+                }
+                disabled={finishing || isAdvancing}
+                accessibilityState={{ disabled: finishing, busy: isAdvancing }}
                 onPress={handleNext}
                 style={{
                   paddingHorizontal: 20,
-                  backgroundColor: blocked || finishing ? colors.ink4 : palette.plum500,
-                  opacity: blocked || finishing ? 0.6 : 1,
+                  backgroundColor: finishing ? colors.ink4 : palette.plum500,
+                  opacity: finishing ? 0.6 : 1,
                 }}
               />
             </View>

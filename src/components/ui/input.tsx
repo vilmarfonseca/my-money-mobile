@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, type Ref } from 'react';
 import { TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
 
 import { useTheme } from '@/theme/theme-provider';
@@ -13,6 +13,8 @@ export type InputProps = TextInputProps & {
   /** Use the monospaced face (amounts, dates, codes). */
   mono?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
+  /** The underlying text field (to focus it). */
+  ref?: Ref<TextInput>;
 };
 
 /** Form field height on phones (`formInputClassName`: `max-md:h-11`). */
@@ -31,6 +33,7 @@ export function Input({
   multiline,
   onBlur,
   onFocus,
+  ref,
   style,
   trailing,
   ...props
@@ -58,6 +61,7 @@ export function Input({
       ]}>
       {leading}
       <TextInput
+        ref={ref}
         editable={editable}
         multiline={multiline}
         placeholderTextColor={colors.ink3}

@@ -1,16 +1,20 @@
 import { CreditCard } from 'lucide-react-native';
-import { useState } from 'react';
-import { View } from 'react-native';
+import { useImperativeHandle, useRef, useState, type Ref } from 'react';
+import { TextInput, View } from 'react-native';
 
 import { useApiAction, useApiQuery } from '@/api/hooks';
 import { CARD_ASPECT, CreditCardFace, getCardSurface } from '@/components/cards/credit-card-rail';
 import {
   nearestColorOption,
   obAttempt,
+  ObAddAnotherButton,
   ObAddedRow,
-  ObDashedButton,
   ObEmptyNote,
+  ObListStatus,
   ObRemoveButton,
+  useObDraftErrors,
+  type OnboardingStepCommit,
+  type OnboardingStepHandle,
 } from '@/components/onboarding/onboarding-ui';
 import { ColorPickerButton } from '@/components/ui/color-picker-button';
 import { CurrencyInput, currencyDigitsToAmount } from '@/components/ui/currency-input';
@@ -38,6 +42,7 @@ const paletteOptions = Object.values(cardColorPalettes).map((palette) => ({
   hex: palette.secondary,
 }));
 
+/** The limit the form starts with; on its own it is not a card in progress. */
 const DEFAULT_LIMIT_DIGITS = '400000';
 
 export type OnboardingCardSummary = {
@@ -51,9 +56,11 @@ export type OnboardingCardSummary = {
 type OnboardingStepCardsProps = {
   cards: OnboardingCardSummary[];
   onCardsChange: (cards: OnboardingCardSummary[]) => void;
+  /** Lets Continue save the open form (see `OnboardingStepHandle`). */
+  ref?: Ref<OnboardingStepHandle>;
 };
 
-export function OnboardingStepCards({ cards, onCardsChange }: OnboardingStepCardsProps) {
+export function OnboardingStepCards({ cards, onCardsChange, ref }: OnboardingStepCardsProps) {
   const { messages, formatCurrency } = useI18n();
   const t = messages.onboarding;
   const c = messages.cardsPage;
@@ -71,6 +78,10 @@ export function OnboardingStepCards({ cards, onCardsChange }: OnboardingStepCard
   const [closingOffsetDays, setClosingOffsetDays] = useState('');
   const [autoDebit, setAutoDebit] = useState(false);
   const [autoDebitAccountId, setAutoDebitAccountId] = useState('');
+  const { hideErrors, reveal, showErrors } = useObDraftErrors();
+  const last4Ref = useRef<TextInput>(null);
+  const limitRef = useRef<TextInput>(null);
+  const debitAccountRef = useRef<View>(null);
 
   // Accounts created in the banks step load lazily once auto debit is on.
   const bankAccounts = useApiQuery('cards.bankAccountOptions', [], { enabled: autoDebit });
@@ -79,11 +90,23 @@ export function OnboardingStepCards({ cards, onCardsChange }: OnboardingStepCard
   const digits = last4.replace(/\D/g, '').slice(0, 4);
   const limitAmount = currencyDigitsToAmount(limitDigits);
   const palette = nearestColorOption(color, paletteOptions);
-  const canSubmit =
-    digits.length === 4 &&
-    limitAmount > 0 &&
-    (!autoDebit || autoDebitAccountId.length > 0) &&
-    !isPending;
+  const missingLast4 = digits.length !== 4;
+  const missingLimit = limitAmount <= 0;
+  const missingDebitAccount = autoDebit && autoDebitAccountId.length === 0;
+  const formValid = !missingLast4 && !missingLimit && !missingDebitAccount;
+  // Anything typed beyond the defaults is a card in progress, which Continue
+  // will save. Picking a network or color alone is not.
+  const hasDraft =
+    nickname.trim().length > 0 ||
+    last4 !== '' ||
+    limitDigits !== DEFAULT_LIMIT_DIGITS ||
+    dueDay !== '' ||
+    closingOffsetDays !== '' ||
+    autoDebit;
+
+  /** Flags the missing fields and brings the first one into view. */
+  const flagMissing = () =>
+    reveal(missingLast4 ? last4Ref : missingLimit ? limitRef : debitAccountRef);
 
   const previewCard: CreditCardAccount = {
     ...createCardFromForm({
@@ -98,9 +121,8 @@ export function OnboardingStepCards({ cards, onCardsChange }: OnboardingStepCard
     id: 'preview',
   };
 
-  const submit = async () => {
-    if (!canSubmit) return;
-
+  /** Creates the card in the form; false when the server refused it. */
+  const save = async (): Promise<boolean> => {
     const result = await obAttempt(() =>
       createCard.run({
         dueDay: dueDay || null,
@@ -116,10 +138,10 @@ export function OnboardingStepCards({ cards, onCardsChange }: OnboardingStepCard
         palette,
       }),
     );
-    if (!result) return;
+    if (!result) return false;
     if (!result.ok) {
       toast.error(result.message);
-      return;
+      return false;
     }
 
     toast.success(t.cardAdded);
@@ -143,7 +165,31 @@ export function OnboardingStepCards({ cards, onCardsChange }: OnboardingStepCard
     setClosingOffsetDays('');
     setAutoDebit(false);
     setAutoDebitAccountId('');
+    hideErrors();
+    return true;
   };
+
+  const submit = () => {
+    if (isPending) return;
+    if (!formValid) {
+      flagMissing();
+      return;
+    }
+    void save();
+  };
+
+  // Continue saves a filled-in card instead of dropping it; an untouched
+  // form just moves on, since cards are optional.
+  useImperativeHandle(ref, () => ({
+    commit: async (): Promise<OnboardingStepCommit> => {
+      if (!hasDraft) return 'empty';
+      if (!formValid) {
+        flagMissing();
+        return 'invalid';
+      }
+      return (await save()) ? 'saved' : 'failed';
+    },
+  }));
 
   const removeCard = async (index: number) => {
     const card = cards[index];
@@ -185,6 +231,7 @@ export function OnboardingStepCards({ cards, onCardsChange }: OnboardingStepCard
         </FormField>
         <FormField label={c.lastFourDigits}>
           <Input
+            ref={last4Ref}
             mono
             accessibilityLabel={c.lastFourDigits}
             maxLength={4}
@@ -192,13 +239,16 @@ export function OnboardingStepCards({ cards, onCardsChange }: OnboardingStepCard
             value={last4}
             onChangeText={(text) => setLast4(text.replace(/\D/g, '').slice(0, 4))}
             placeholder="4821"
+            invalid={showErrors && missingLast4}
           />
         </FormField>
         <FormField label={c.creditLimit}>
           <CurrencyInput
+            ref={limitRef}
             accessibilityLabel={c.creditLimit}
             value={limitDigits}
             onValueChange={setLimitDigits}
+            invalid={showErrors && missingLimit}
           />
         </FormField>
         <FormField label={c.dueDay} hint={c.dueDayHint}>
@@ -247,17 +297,20 @@ export function OnboardingStepCards({ cards, onCardsChange }: OnboardingStepCard
             {c.autoDebitHint}
           </Text>
           {autoDebit ? (
-            <Select
-              accessibilityLabel={c.autoDebitAccount}
-              title={c.autoDebitAccount}
-              placeholder={c.chooseAccount}
-              value={autoDebitAccountId}
-              onValueChange={setAutoDebitAccountId}
-              options={(bankAccounts.data ?? []).map((account) => ({
-                label: account.name,
-                value: account.id,
-              }))}
-            />
+            <View ref={debitAccountRef}>
+              <Select
+                accessibilityLabel={c.autoDebitAccount}
+                title={c.autoDebitAccount}
+                placeholder={c.chooseAccount}
+                value={autoDebitAccountId}
+                onValueChange={setAutoDebitAccountId}
+                invalid={showErrors && missingDebitAccount}
+                options={(bankAccounts.data ?? []).map((account) => ({
+                  label: account.name,
+                  value: account.id,
+                }))}
+              />
+            </View>
           ) : null}
         </View>
 
@@ -267,14 +320,22 @@ export function OnboardingStepCards({ cards, onCardsChange }: OnboardingStepCard
         </View>
       </View>
 
-      <View style={{ marginTop: 18 }}>
-        <ObDashedButton
-          label={c.addCard}
-          loading={createCard.pending}
-          disabled={!canSubmit}
-          onPress={submit}
-        />
-      </View>
+      <ObAddAnotherButton
+        label={t.addAnotherCard}
+        disabled={!formValid || isPending}
+        pending={createCard.pending}
+        onPress={submit}
+      />
+
+      {showErrors && !formValid ? (
+        <ObListStatus tone="error">{t.draftIncomplete}</ObListStatus>
+      ) : hasDraft ? (
+        formValid ? (
+          <ObListStatus tone="info">{t.continueSavesCard}</ObListStatus>
+        ) : null
+      ) : cards.length > 0 ? (
+        <ObListStatus tone="success">{t.cardReady}</ObListStatus>
+      ) : null}
 
       <View style={{ marginTop: 20 }}>
         <FieldLabel>{t.yourCards}</FieldLabel>
