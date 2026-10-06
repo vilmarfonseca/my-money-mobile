@@ -29,10 +29,10 @@ function withAlpha(hex: string, alpha: number) {
 }
 
 /**
- * In-app plan picker for signed-in users on the free Starter tier (skipped or
- * abandoned checkout, canceled/lapsed plan). Starter is the current plan and
- * goes back to the app; the paid tiers open Stripe Checkout in an in-app
- * browser and, once it closes, reload the account to see whether it paid.
+ * In-app plan picker for signed-in users on the free Starter tier (new
+ * account, abandoned checkout, canceled/lapsed plan). Starter is the current
+ * plan and continues into the app; the paid tiers open Stripe Checkout in an
+ * in-app browser and, once it closes, reload the account to see whether it paid.
  */
 export function PlanPicker({
   messages,
@@ -53,7 +53,7 @@ export function PlanPicker({
   locked?: boolean;
   /** The account has not used its plan trial: paid plans start with free days. */
   trialAvailable?: boolean;
-  /** The free Starter card's action: back to the app. */
+  /** The free Starter card's action: onboarding for a new account, else back to the app. */
   onContinueFree: () => void;
   /** Checkout closed and the account now has a paid plan. */
   onSubscribed: () => void;

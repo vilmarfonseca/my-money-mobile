@@ -11,6 +11,7 @@ import { Screen } from '@/components/ui/screen';
 import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { useI18n } from '@/lib/i18n/provider';
+import { useBootstrap } from '@/providers/app-data-provider';
 import { useSession } from '@/providers/auth-provider';
 import { useTheme } from '@/theme/theme-provider';
 import { radius } from '@/theme/tokens';
@@ -47,16 +48,19 @@ function SignOutButton({ label }: { label: string }) {
 }
 
 /**
- * Plan picker for signed-in users on the free Starter tier: new accounts that
- * skipped or abandoned checkout, and canceled or lapsed paid plans. Usually
- * an upgrade offer with a way back to the app; for an account whose plan
- * trial ended unpaid it is the locked screen, where paying for a plan (or
- * deleting the account) is the only way forward. Subscribers change plans
- * through the Stripe portal instead, so an active paid plan skips it.
+ * Plan picker for signed-in users on the free Starter tier: brand-new
+ * accounts (every sign-up lands here before onboarding), abandoned
+ * checkouts, and canceled or lapsed paid plans. Usually an upgrade offer with
+ * a way to continue for free (into onboarding for a new account, back to the
+ * app otherwise); for an account whose plan trial ended unpaid it is the
+ * locked screen, where paying for a plan (or deleting the account) is the
+ * only way forward. Subscribers change plans through the Stripe portal
+ * instead, so an active paid plan (or a complimentary one) skips it.
  */
 export default function SubscribeScreen() {
   const { locale, messages } = useI18n();
   const entitlements = useEntitlements();
+  const { onboarding } = useBootstrap();
   const router = useRouter();
   const refresh = useRefreshData();
   const prices = useScreenQuery('billing.displayPrices', []);
@@ -64,8 +68,11 @@ export default function SubscribeScreen() {
   // the account from here.
   const { onRefresh, refreshing } = usePullToRefresh({ refetch: refresh });
 
-  if (entitlements.hasActiveSubscription) {
-    return <Redirect href="/dashboard" />;
+  // A new account continues into onboarding, whichever plan it picks.
+  const next = onboarding.completed ? '/dashboard' : '/onboard';
+
+  if (entitlements.hasActiveSubscription || entitlements.complimentary) {
+    return <Redirect href={next} />;
   }
 
   const locked = entitlements.lockedOut;
@@ -75,7 +82,8 @@ export default function SubscribeScreen() {
       ? messages.billing.subscribe.subscriptionEnded
       : null;
 
-  const leave = () => (router.canGoBack() ? router.back() : router.replace('/dashboard'));
+  const leave = () =>
+    onboarding.completed && router.canGoBack() ? router.back() : router.replace(next);
 
   return (
     <Screen onRefresh={onRefresh} refreshing={refreshing} bottomInset={56}>
@@ -106,7 +114,7 @@ export default function SubscribeScreen() {
           locked={locked}
           trialAvailable={!entitlements.planTrialUsed}
           onContinueFree={leave}
-          onSubscribed={() => router.replace('/dashboard')}
+          onSubscribed={() => router.replace(next)}
         />
       ) : prices.isError ? (
         <View style={{ alignItems: 'center', gap: 12, paddingVertical: 48 }}>
