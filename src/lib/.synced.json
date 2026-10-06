@@ -1,6 +1,6 @@
 {
   "source": "my-money-v2",
-  "commit": "652300f+dirty",
+  "commit": "9e97399+dirty",
   "files": [
     "account/account-actions.d.ts",
     "account/deletion-reasons.ts",
@@ -15,6 +15,7 @@
     "analytics/analytics-catalog.ts",
     "analytics/analytics-preview-data.ts",
     "analytics/analytics-queries.d.ts",
+    "analytics/reddit.ts",
     "balance/balance-data.ts",
     "balance/balance-utils.ts",
     "billing/display-prices.d.ts",

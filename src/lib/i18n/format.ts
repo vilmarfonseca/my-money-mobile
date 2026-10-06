@@ -39,11 +39,15 @@ export function splitCurrencyParts(
   locale: AppLocale,
   currency = "USD",
 ) {
-  const parts = new Intl.NumberFormat(locale, {
+  const formatter = new Intl.NumberFormat(locale, {
     currency,
     minimumFractionDigits: 2,
     style: "currency",
-  }).formatToParts(value);
+  });
+  const parts =
+    typeof formatter.formatToParts === "function"
+      ? formatter.formatToParts(value)
+      : splitFormattedCurrency(formatter.format(value), locale);
   const decimalIndex = parts.findIndex((part) => part.type === "decimal");
 
   if (decimalIndex === -1) {
@@ -65,6 +69,33 @@ export function splitCurrencyParts(
       .map((part) => part.value)
       .join(""),
   };
+}
+
+/**
+ * Fallback for runtimes whose `Intl.NumberFormat` lacks `formatToParts`
+ * (Hermes on iOS): finds the decimal separator in the formatted string and
+ * splits around it, mirroring the parts `formatToParts` would return.
+ */
+function splitFormattedCurrency(
+  formatted: string,
+  locale: AppLocale,
+): Intl.NumberFormatPart[] {
+  const separator = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 1,
+  })
+    .format(1.1)
+    .replace(/\d/g, "");
+  const index = separator ? formatted.lastIndexOf(separator) : -1;
+
+  if (index === -1 || !/^\d{2}/.test(formatted.slice(index + 1))) {
+    return [{ type: "integer", value: formatted }];
+  }
+
+  return [
+    { type: "integer", value: formatted.slice(0, index) },
+    { type: "decimal", value: separator },
+    { type: "fraction", value: formatted.slice(index + 1) },
+  ];
 }
 
 export function formatMonthShort(date: Date, locale: AppLocale) {

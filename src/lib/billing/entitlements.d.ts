@@ -1,6 +1,7 @@
 // Synced from my-money-v2 (src/lib/billing/entitlements.ts). Do not edit here: change it
 // in the web repo and run `npm run sync:web`.
 import { type GatedFeature, type LimitedResource, type PlanTier } from "@/lib/billing/plans";
+import { schema } from "@/lib/db";
 /**
  * A user's resolved billing state. All feature/limit checks in server code go
  * through this object so the tier policy lives in exactly one place
@@ -16,6 +17,12 @@ export type Entitlements = {
      * The app is usable either way: without one the account is on Starter.
      */
     hasActiveSubscription: boolean;
+    /**
+     * The tier is a complimentary plan we granted (`users.comp_tier`): it never
+     * ends, has no Stripe subscription behind it and must never reach a
+     * checkout, so there is nothing to bill, upgrade or manage.
+     */
+    complimentary: boolean;
     limits: Record<LimitedResource, number>;
     features: Record<GatedFeature, boolean>;
     currentPeriodEnd: string | null;
@@ -40,6 +47,7 @@ export type Entitlements = {
      *  gifted to a Starter account start without one. */
     hasPaymentMethod: boolean;
 };
+export declare function buildEntitlements(row: typeof schema.subscriptions.$inferSelect | undefined, compTier?: PlanTier | null): Entitlements;
 export declare function getSubscriptionForUserId(userId: string): Promise<{
     createdAt: Date;
     updatedAt: Date;

@@ -50,7 +50,7 @@ export const enUSMessages = {
       },
       marketing: {
         title: "Marketing",
-        body: "The Meta Pixel and Google Ads tags measure whether our advertising works. Off means no ad-related identifiers are set and nothing is reported to those platforms.",
+        body: "The Meta Pixel, the Reddit Pixel and Google Ads tags measure whether our advertising works. Off means no ad-related identifiers are set and nothing is reported to those platforms.",
       },
     },
   },
@@ -63,9 +63,9 @@ export const enUSMessages = {
       effective: "Effective",
       effectiveDate: "August 17, 2026",
       updated: "Last updated",
-      updatedDate: "September 30, 2026",
+      updatedDate: "October 1, 2026",
       version: "Version",
-      versionNumber: "1.4",
+      versionNumber: "1.6",
     },
     promise: {
       eyebrow: "Our promise",
@@ -145,7 +145,7 @@ export const enUSMessages = {
           { type: "h3", text: "Cookies and analytics" },
           {
             type: "p",
-            text: "We set the cookies needed to keep you signed in and to remember your language, theme, and cookie choice. **On the public pages only** (homepage, guide, contact, this page, and the sign-in and sign-up screens) we use Google Tag Manager (Google Analytics) to measure visits and sign-ups, and the Meta Pixel to measure the performance of our own advertising; Google reCAPTCHA protects the contact form. We rely on our legitimate interest in understanding and improving the site and our advertising (Brazil's LGPD, art. 7, IX and art. 10), so these analytics and marketing cookies are **on by default** and the cookie notice tells you so on your first visit. **You can opt out at any time**: all at once with \"Opt out of all\" in the cookie notice, or category by category from the \"Cookie preferences\" link in the footer, and the tags stop loading for you from then on. Browsers that send the Global Privacy Control signal are treated as having opted out. These tools receive page views and technical identifiers. **They never receive your financial records**: transactions, balances, goals, and account names are not sent to any analytics or advertising service, and none of these scripts load inside the signed-in app. **One signal is sent by our servers instead of a script**: the first time you record a transaction, we tell Meta that a visitor who came from one of our ads started using the app. It carries only the identifier the Meta Pixel stored in your browser on the public pages, together with your IP address and browser type, which the pixel already receives; it never includes what you recorded, your email, or your name. It follows the same marketing preference: if you opted out, or your browser sends Global Privacy Control, or the pixel never loaded for you, nothing is sent.",
+            text: "We set the cookies needed to keep you signed in and to remember your language, theme, and cookie choice. **On the public pages only** (homepage, guide, contact, this page, and the sign-in and sign-up screens) we use Google Tag Manager (Google Analytics) to measure visits and sign-ups, and the Meta Pixel and the Reddit Pixel to measure the performance of our own advertising; Google reCAPTCHA protects the contact form. We rely on our legitimate interest in understanding and improving the site and our advertising (Brazil's LGPD, art. 7, IX and art. 10), so these analytics and marketing cookies are **on by default** and the cookie notice tells you so on your first visit. **You can opt out at any time**: all at once with \"Opt out of all\" in the cookie notice, or category by category from the \"Cookie preferences\" link in the footer, and the tags stop loading for you from then on. Browsers that send the Global Privacy Control signal are treated as having opted out. These tools receive page views and technical identifiers, plus two milestones: that an account was created, and that a paid plan was started (which plan, its price and currency, and a checkout reference that keeps the same purchase from being counted twice; this is recorded on the confirmation step right after checkout). **They never receive your financial records**: transactions, balances, goals, and account names are not sent to any analytics or advertising service, and none of these scripts load inside the signed-in app. **One signal is sent by our servers instead of a script**: the first time you record a transaction, we tell Meta that a visitor who came from one of our ads started using the app. It carries only the identifier the Meta Pixel stored in your browser on the public pages, together with your IP address and browser type, which the pixel already receives; it never includes what you recorded, your email, or your name. It follows the same marketing preference: if you opted out, or your browser sends Global Privacy Control, or the pixel never loaded for you, nothing is sent.",
           },
           {
             type: "table",
@@ -273,6 +273,7 @@ export const enUSMessages = {
               "**Resend** for transactional email such as household invitations and replies to your messages.",
               "**Google** for the Calendar integration you may connect, reCAPTCHA on the contact form, and Tag Manager / Analytics on the site.",
               "**Meta** for the Meta Pixel and the Conversions API, which measure the performance of our advertising.",
+              "**Reddit** for the Reddit Pixel, which measures the performance of our advertising on Reddit.",
             ],
           },
           {
@@ -578,9 +579,12 @@ export const enUSMessages = {
         active: "Active",
         past_due: "Past due",
         free: "Free",
+        complimentary: "Complimentary",
       },
       freePlanLine:
         "Free for good. Upgrade for more accounts, cards and goals, the calendar, the balance page and more.",
+      complimentaryLine:
+        "A gift from MyMoney: nothing to pay, no end date, and no card is ever asked for.",
       renewsOn: (date: string) => `Renews ${date}`,
       cancelsOn: (date: string) => `Ends ${date}`,
       daysLeft: (days: number) =>
@@ -2688,7 +2692,7 @@ export const ptBRMessages: Messages = {
       },
       marketing: {
         title: "Marketing",
-        body: "O Pixel da Meta e as tags do Google Ads medem se os nossos anúncios funcionam. Desativado significa que nenhum identificador de anúncio é gravado e nada é informado a essas plataformas.",
+        body: "O Pixel da Meta, o Pixel do Reddit e as tags do Google Ads medem se os nossos anúncios funcionam. Desativado significa que nenhum identificador de anúncio é gravado e nada é informado a essas plataformas.",
       },
     },
   },
@@ -2701,9 +2705,9 @@ export const ptBRMessages: Messages = {
       effective: "Vigente desde",
       effectiveDate: "17 de agosto de 2026",
       updated: "Última atualização",
-      updatedDate: "30 de setembro de 2026",
+      updatedDate: "1º de outubro de 2026",
       version: "Versão",
-      versionNumber: "1.4",
+      versionNumber: "1.6",
     },
     promise: {
       eyebrow: "Nosso compromisso",
@@ -2783,7 +2787,7 @@ export const ptBRMessages: Messages = {
           { type: "h3", text: "Cookies e análise de uso" },
           {
             type: "p",
-            text: "Gravamos os cookies necessários para manter você conectado e lembrar idioma, tema e a sua escolha de cookies. **Somente nas páginas públicas** (página inicial, documentação, contato, esta página e as telas de login e cadastro) usamos o Google Tag Manager (Google Analytics) para medir visitas e cadastros, e o Pixel da Meta para medir o desempenho dos nossos próprios anúncios; o Google reCAPTCHA protege o formulário de contato. Com base no nosso legítimo interesse em entender e melhorar o site e a nossa publicidade (LGPD, art. 7º, IX e art. 10), esses cookies de análise e marketing vêm **ativados por padrão**, e o aviso de cookies informa isso na sua primeira visita. **Você pode se opor a qualquer momento**: de uma vez, com \"Desativar todos\" no aviso de cookies, ou categoria por categoria, pelo link \"Preferências de cookies\" no rodapé, e as tags deixam de carregar para você a partir daí. Navegadores que enviam o sinal Global Privacy Control são tratados como oposição. Essas ferramentas recebem visualizações de página e identificadores técnicos. **Elas nunca recebem os seus registros financeiros**: transações, saldos, metas e nomes de contas não são enviados a nenhum serviço de análise ou publicidade, e nenhum desses scripts carrega dentro do app após o login. **Um único sinal é enviado pelos nossos servidores, e não por um script**: na primeira vez que você registra uma transação, informamos à Meta que um visitante que veio de um dos nossos anúncios começou a usar o app. Ele leva apenas o identificador que o Pixel da Meta gravou no seu navegador nas páginas públicas, junto com o seu endereço IP e o tipo de navegador, que o pixel já recebe; nunca inclui o que você registrou, o seu e-mail ou o seu nome. Ele segue a mesma preferência de marketing: se você se opôs, se o seu navegador envia o Global Privacy Control ou se o pixel nunca carregou para você, nada é enviado.",
+            text: "Gravamos os cookies necessários para manter você conectado e lembrar idioma, tema e a sua escolha de cookies. **Somente nas páginas públicas** (página inicial, documentação, contato, esta página e as telas de login e cadastro) usamos o Google Tag Manager (Google Analytics) para medir visitas e cadastros, e o Pixel da Meta e o Pixel do Reddit para medir o desempenho dos nossos próprios anúncios; o Google reCAPTCHA protege o formulário de contato. Com base no nosso legítimo interesse em entender e melhorar o site e a nossa publicidade (LGPD, art. 7º, IX e art. 10), esses cookies de análise e marketing vêm **ativados por padrão**, e o aviso de cookies informa isso na sua primeira visita. **Você pode se opor a qualquer momento**: de uma vez, com \"Desativar todos\" no aviso de cookies, ou categoria por categoria, pelo link \"Preferências de cookies\" no rodapé, e as tags deixam de carregar para você a partir daí. Navegadores que enviam o sinal Global Privacy Control são tratados como oposição. Essas ferramentas recebem visualizações de página e identificadores técnicos, além de dois marcos: que uma conta foi criada e que um plano pago foi iniciado (qual plano, o preço e a moeda, e uma referência do checkout que evita contar a mesma compra duas vezes; isso é registrado na etapa de confirmação logo após o checkout). **Elas nunca recebem os seus registros financeiros**: transações, saldos, metas e nomes de contas não são enviados a nenhum serviço de análise ou publicidade, e nenhum desses scripts carrega dentro do app após o login. **Um único sinal é enviado pelos nossos servidores, e não por um script**: na primeira vez que você registra uma transação, informamos à Meta que um visitante que veio de um dos nossos anúncios começou a usar o app. Ele leva apenas o identificador que o Pixel da Meta gravou no seu navegador nas páginas públicas, junto com o seu endereço IP e o tipo de navegador, que o pixel já recebe; nunca inclui o que você registrou, o seu e-mail ou o seu nome. Ele segue a mesma preferência de marketing: se você se opôs, se o seu navegador envia o Global Privacy Control ou se o pixel nunca carregou para você, nada é enviado.",
           },
           {
             type: "table",
@@ -2911,6 +2915,7 @@ export const ptBRMessages: Messages = {
               "**Resend** para e-mails transacionais, como convites de família e respostas às suas mensagens.",
               "**Google** para a integração com a Agenda que você pode conectar, o reCAPTCHA do formulário de contato e o Tag Manager / Analytics do site.",
               "**Meta** para o Pixel da Meta e a API de Conversões, que medem o desempenho dos nossos anúncios.",
+              "**Reddit** para o Pixel do Reddit, que mede o desempenho dos nossos anúncios no Reddit.",
             ],
           },
           {
@@ -3216,9 +3221,12 @@ export const ptBRMessages: Messages = {
         active: "Ativa",
         past_due: "Pagamento pendente",
         free: "Grátis",
+        complimentary: "Cortesia",
       },
       freePlanLine:
         "Grátis para sempre. Faça upgrade para mais contas, cartões e metas, calendário, página de saldo e mais.",
+      complimentaryLine:
+        "Um presente do MyMoney: nada a pagar, sem data para terminar, e nenhum cartão é pedido.",
       renewsOn: (date: string) => `Renova em ${date}`,
       cancelsOn: (date: string) => `Termina em ${date}`,
       daysLeft: (days: number) =>
