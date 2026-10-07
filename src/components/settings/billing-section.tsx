@@ -5,6 +5,7 @@ import { View } from 'react-native';
 
 import { useRefreshData } from '@/api/hooks';
 import { openWebFlow, type WebFlowPath } from '@/api/web-handoff';
+import { openStoreSubscriptions } from '@/providers/store-billing';
 import { useEntitlements } from '@/components/billing/entitlements-provider';
 import { errorMessage } from '@/components/settings/action-result';
 import { SectionHeading } from '@/components/settings/section-heading';
@@ -37,15 +38,17 @@ export function BillingSection() {
   // either the plan's 7-day trial or days a referral granted.
   const statusKey = entitlements.status;
   const onTrial = entitlements.freeDaysKind === 'trial';
-  const statusLabel = !entitlements.hasActiveSubscription
-    ? t.status.free
-    : statusKey === 'trialing'
-      ? onTrial
-        ? t.status.trial
-        : t.status.trialing
-      : statusKey === 'active' || statusKey === 'past_due'
-        ? t.status[statusKey]
-        : t.status.free;
+  const statusLabel = entitlements.complimentary
+    ? t.status.complimentary
+    : !entitlements.hasActiveSubscription
+      ? t.status.free
+      : statusKey === 'trialing'
+        ? onTrial
+          ? t.status.trial
+          : t.status.trialing
+        : statusKey === 'active' || statusKey === 'past_due'
+          ? t.status[statusKey]
+          : t.status.free;
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(locale, {
@@ -60,17 +63,19 @@ export function BillingSection() {
   const freeDays = entitlements.hasActiveSubscription && entitlements.trialEndsAt;
   const periodEnd = freeDays ? entitlements.trialEndsAt : entitlements.currentPeriodEnd;
 
-  const renewalLine = !entitlements.hasActiveSubscription
-    ? t.freePlanLine
-    : periodEnd
-      ? freeDays
-        ? onTrial
-          ? t.trialEndsOn(formatDate(periodEnd))
-          : t.freeUntil(formatDate(periodEnd))
-        : entitlements.cancelAtPeriodEnd
-          ? t.cancelsOn(formatDate(periodEnd))
-          : t.renewsOn(formatDate(periodEnd))
-      : null;
+  const renewalLine = entitlements.complimentary
+    ? t.complimentaryLine
+    : !entitlements.hasActiveSubscription
+      ? t.freePlanLine
+      : periodEnd
+        ? freeDays
+          ? onTrial
+            ? t.trialEndsOn(formatDate(periodEnd))
+            : t.freeUntil(formatDate(periodEnd))
+          : entitlements.cancelAtPeriodEnd
+            ? t.cancelsOn(formatDate(periodEnd))
+            : t.renewsOn(formatDate(periodEnd))
+        : null;
 
   // "N days left · Next billing on <date>" for every paid plan, so the user
   // always knows how long the current period runs and when the card is hit.
@@ -90,6 +95,14 @@ export function BillingSection() {
   // it ends, gifted days simply lapse to Starter. Either way the fix is the
   // same door: "Keep my plan" (a Stripe page that takes payment details).
   const tierName = messages.billing.tierNames[entitlements.tier];
+
+  // A plan bought through the App Store or Google Play is the store's to
+  // change or cancel: no Stripe portal, no "Keep my plan".
+  const store =
+    entitlements.provider === 'app_store' || entitlements.provider === 'play_store'
+      ? entitlements.provider
+      : null;
+  const storeName = store ? messages.billing.store.names[store] : null;
   const noPaymentLine =
     freeDays && !entitlements.hasPaymentMethod && periodEnd
       ? onTrial
@@ -165,7 +178,21 @@ export function BillingSection() {
           </View>
         </View>
 
-        {entitlements.hasActiveSubscription ? (
+        {entitlements.complimentary ? null : store && storeName ? (
+          <View style={{ gap: 12, marginTop: 16 }}>
+            <Text size="sm" color="ink3" style={{ lineHeight: 21 }}>
+              {t.storeManaged(storeName)}
+            </Text>
+            <Button
+              block
+              size="lg"
+              variant="outline"
+              label={t.manageInStore(storeName)}
+              icon={(props) => <ExternalLink {...props} />}
+              onPress={() => openStoreSubscriptions(store).catch(() => {})}
+            />
+          </View>
+        ) : entitlements.hasActiveSubscription ? (
           <View style={{ gap: 10, marginTop: 16 }}>
             <Button
               block

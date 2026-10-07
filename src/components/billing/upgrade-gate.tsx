@@ -5,6 +5,7 @@ import { View } from 'react-native';
 
 import { useRefreshData } from '@/api/hooks';
 import { openWebFlow } from '@/api/web-handoff';
+import { openStoreSubscriptions } from '@/providers/store-billing';
 import { useEntitlements } from '@/components/billing/entitlements-provider';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -22,7 +23,7 @@ import { useTheme } from '@/theme/theme-provider';
 export function UpgradeGate({ feature }: { feature: GatedFeature }) {
   const { messages } = useI18n();
   const { colors } = useTheme();
-  const { hasActiveSubscription } = useEntitlements();
+  const { hasActiveSubscription, provider } = useEntitlements();
   const router = useRouter();
   const refresh = useRefreshData();
   const [opening, setOpening] = useState(false);
@@ -30,6 +31,11 @@ export function UpgradeGate({ feature }: { feature: GatedFeature }) {
   const tierName = billing.tierNames[minTierForFeature(feature)];
 
   const upgrade = async () => {
+    // A store plan changes tier in the store that bills it.
+    if (provider === 'app_store' || provider === 'play_store') {
+      openStoreSubscriptions(provider).catch(() => {});
+      return;
+    }
     if (!hasActiveSubscription) {
       router.push('/subscribe');
       return;
