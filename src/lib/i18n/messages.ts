@@ -8,17 +8,17 @@ export type DayPeriod = "morning" | "afternoon" | "evening";
 export const enUSMessages = {
   meta: {
     contact: "Contact",
-    guideSuffix: "MyMoney user guide",
+    guideSuffix: "MyMoney docs",
     home: {
-      title: "Private budgeting app for you and your household | MyMoney",
+      title: "MyMoney | Personal finance app with real privacy",
       description:
-        "Track accounts, cards, bills and goals with real privacy: your data stays in one place, never sold, profiled or sent to third-party AI. Free to start, no card.",
+        "Track your accounts, cards, statements and goals with real privacy: your data stays right here, never sold or sent to third-party AI. Start for free.",
     },
     notFound: {
       title: "Page not found",
       body: "The page you were looking for doesn't exist or has moved.",
       backHome: "Back to the homepage",
-      guide: "Open the user guide",
+      guide: "Open the docs",
     },
     privacy: "Privacy Policy",
     newTransaction: "New transaction",
@@ -601,6 +601,23 @@ export const enUSMessages = {
       manage: "Manage",
       changePlan: "Change plan",
       upgrade: "Upgrade",
+      storeManaged: (store: string) =>
+        `Bought in the MyMoney app and billed by ${store}. Change or cancel it in your ${store} subscriptions.`,
+      manageInStore: (store: string) => `Manage in ${store}`,
+    },
+    store: {
+      names: { app_store: "the App Store", play_store: "Google Play" },
+      restore: "Restore purchases",
+      restored: "Your plan is back.",
+      nothingToRestore: "No purchases to restore on this account.",
+      purchaseFailed: "The purchase didn't go through. Please try again.",
+      pending: "The store is still confirming your payment. Your plan turns on as soon as it does.",
+      activating: "Payment received. Your plan turns on in a moment; there's no need to buy again.",
+      unavailable: "Plans can't be loaded from the store right now.",
+      autoRenew: (store: string) =>
+        `Subscriptions renew automatically until cancelled. Payment is charged to your ${store} account; cancel at least 24 hours before the period ends in your ${store} subscriptions.`,
+      terms: "Terms of use",
+      privacy: "Privacy policy",
     },
     deleteAccount: {
       section: {
@@ -946,38 +963,38 @@ export const enUSMessages = {
       contact: "Contact",
       features: "Features",
       getStarted: "Get started",
-      guide: "User guide",
+      guide: "Docs",
       goToDashboard: "Go to dashboard",
       insights: "In depth",
       logIn: "Log in",
-      mobileApp: "Mobile app",
+      mobileApp: "Mobile",
       openMenu: "Open menu",
       pricing: "Pricing",
       roadmap: "Roadmap",
     },
     hero: {
-      lede: "Banks, cards, bills and goals in one clear view: what's coming and what's left this month. And your data stays with you, and only you.",
+      lede: "Banks, cards, bills and goals in one clear view: what's coming up and how much is left this month. And your data stays private, with you alone.",
       note: "Free to start, no card · Plus from {price}/mo on annual billing · Cancel anytime",
-      pillBadge: "Private by design",
-      pillText: "Your data stays here. Never sold, never fed to third-party AI.",
-      playVideo: "Play the demo",
+      pillBadge: "Total privacy",
+      pillText: "Your data stays right here. Never sold, never shared with third-party AI.",
+      playVideo: "Watch the demo",
       primaryCta: "Start for free",
       screenshotAlt: "MyMoney dashboard",
       secondaryCta: "Explore features",
       videoAlt: "MyMoney product demo",
-      titleEmphasis: "at once.",
-      titleLead: "See all your money",
+      titleEmphasis: "simple and clear.",
+      titleLead: "Your money, made",
     },
     pwa: {
       badge: "New",
       eyebrow: "On your phone",
-      titleLead: "MyMoney now becomes",
+      titleLead: "MyMoney is now",
       titleEmphasis: "an app on your phone",
-      body: "Add it to your home screen and MyMoney opens full screen, like any app, no app store, no download, and always the latest version. Works on iPhone and Android.",
+      body: "Add it to your home screen and MyMoney opens full screen like any other app. No app store, no download, always up to date. Works on iPhone and Android.",
       steps: [
         "Open **mymoneyapp.io** in your phone's browser",
         "Tap **Share**, then **Add to Home Screen**",
-        "Done! The icon sits with your apps and opens in one tap",
+        "Done! The icon sits with your other apps and opens with one tap",
       ],
       note: "Your money in the palm of your hand",
       installCta: "Install the app",
@@ -990,7 +1007,7 @@ export const enUSMessages = {
     },
     strip: {
       items: [
-        "Real privacy",
+        "Total privacy",
         "Accounts & cards",
         "CSV, XLSX & OFX import & export",
         "Savings goals",
@@ -1005,27 +1022,27 @@ export const enUSMessages = {
         amount: "$313",
         amountUnit: ".28 more",
         description:
-          "“Groceries are up from last month.” Timely, gentle, never spammy.",
+          "“Groceries are up from last month.” Timely, gentle, never pushy.",
         eyebrow: "Alerts",
       },
       calendar: {
         description:
-          "See all your bills and subscriptions on one timeline and plan your future.",
+          "See every bill and subscription on one timeline and plan ahead.",
         eyebrow: "Calendar",
         screenshotAlt: "MyMoney calendar preview",
         title: "Plan your bills",
       },
       dashboard: {
         description:
-          "Balance, monthly flow, and money left to save, no digging.",
+          "Your balance, monthly flow and how much is left to save.",
         eyebrow: "Dashboard",
         screenshotAlt: "MyMoney dashboard preview",
-        title: "Your whole net worth, the second you open it",
+        title: "Your whole net worth, the moment you open the app",
       },
       eyebrow: "Features",
       goals: {
         description:
-          "Drag the monthly contribution and watch the finish date move in real time.",
+          "Adjust the monthly contribution and watch the finish date update instantly.",
         eyebrow: "Goals",
         screenshotAlt: "MyMoney goals preview",
         title: "What-if simulator",
@@ -1033,20 +1050,20 @@ export const enUSMessages = {
       importCell: {
         eyebrow: "Import/Export",
         description:
-          "You own your data. Import via CSV, XLSX, or OFX and export anytime.",
+          "It's your data. Import from CSV, XLSX or OFX and export it whenever you like.",
         files: ["statement.csv", "history.xlsx", "bank.ofx"],
         title: "Your data, your control",
       },
       subtitle:
-        "Each screen answers one question: how much you have, what's coming, and what's left.",
-      titleEmphasis: "does the watching",
-      titleLead: "One app that",
+        "Every screen answers one question: how much you have, what's coming, and what's left.",
+      titleEmphasis: "watches your money for you",
+      titleLead: "An app that",
     },
     insights: {
       accounts: {
         cta: "Add your accounts",
         description:
-          "Checking and investment accounts in one ledger. Track your average yield (as % of CDI, monthly, or annual rate) and watch interest land each month at every bank.",
+          "Checking and investment accounts in one place. Track your average yield (as a % of CDI, or a monthly or annual rate) and watch interest come in every month, bank by bank.",
         eyebrow: "Accounts",
         screenshotAlt: "MyMoney accounts page",
         title: "Your banks, side by side",
@@ -1054,7 +1071,7 @@ export const enUSMessages = {
       analytics: {
         cta: "See the analytics",
         description:
-          "Detailed charts that are actually useful. See every income source tied to every spending category, plus net worth, projected balance, compound growth, savings runway, and much more.",
+          "Detailed charts that actually help. Trace every income source to the spending it covers, and see your net worth, projected balance, compound growth, savings runway and more.",
         eyebrow: "Analytics · Premium",
         screenshotAlt: "MyMoney analytics page",
         title: "See where every dollar goes",
@@ -1064,7 +1081,7 @@ export const enUSMessages = {
       household: {
         cta: "Invite your family",
         description:
-          "Invite your family to manage your finances together and keep everyone in the same place.",
+          "Invite your family to manage the household's money together, with everyone in one place.",
         eyebrow: "Family · Premium",
         screenshotAlt: "MyMoney shared balance page",
         title: "The whole family on the same page",
@@ -1072,13 +1089,13 @@ export const enUSMessages = {
       spending: {
         cta: "Track spending",
         description:
-          "Category breakdowns, a six-month trend, and a running budget line, with a nudge before a category gets away from you.",
+          "Detailed categories, a six-month trend and a budget line, plus a heads-up before any category gets out of hand.",
         eyebrow: "Spending",
         screenshotAlt: "MyMoney spending page",
         title: "Where the money actually went",
       },
       subtitle:
-        "Track your money without the hassle, direct and clear.",
+        "Keep track of your money without the hassle. Straightforward and clear.",
       titleEmphasis: "easy to use",
       titleLead: "Made to be",
     },
@@ -1091,23 +1108,23 @@ export const enUSMessages = {
         },
         {
           description:
-            "Many apps ship your transactions to outside AI companies to generate “insights”. MyMoney doesn't: every tip and chart is computed here, from your own numbers, and never leaves.",
+            "Many apps send your transactions to outside AI companies to generate “insights”. MyMoney doesn't: every tip and chart is calculated here, from your own numbers, and never leaves.",
           title: "No third-party AI",
         },
         {
           description:
-            "No data brokers, no advertising profile, no scoring. Nobody at MyMoney browses your records: access is limited to what running the service needs.",
+            "No data brokers, no ad profiles, no scoring. Nobody at MyMoney looks through your records: access is limited to what's needed to keep the service running.",
           title: "Never sold, never profiled",
         },
         {
           description:
-            "Export everything in CSV, XLSX or OFX at any time, re-importable the day you come back. Delete your account, delete your data.",
+            "Export everything as CSV, XLSX or OFX at any time, ready to re-import if you ever come back. Delete your account and your data goes with it.",
           title: "Yours to take with you",
         },
       ],
       eyebrow: "Privacy",
       subtitle:
-        "Our model is simple: you subscribe, so the app answers only to you. No ads, no data sales, no third-party AI reading your statement.",
+        "Our model is simple: you subscribe, so the app works for you and no one else. No ads, no selling your data, no third-party AI reading your statements.",
       titleEmphasis: "not with your data",
       titleLead: "You pay for the app,",
       titleTail: ".",
@@ -1123,7 +1140,7 @@ export const enUSMessages = {
           topic: "How the app makes money",
           others:
             "Free or cheap, paid for with ads, partnerships and your data",
-          us: "A subscription. You are the customer, not the product",
+          us: "A subscription. You're the customer, not the product",
         },
         {
           topic: "Where your data ends up",
@@ -1133,50 +1150,50 @@ export const enUSMessages = {
         {
           topic: "“AI” features",
           others:
-            "Your transactions are sent to outside AI companies, which can do whatever they want with them",
-          us: "Nothing leaves. Tips and analytics are computed inside the app",
+            "Your transactions go to outside AI companies, which can do whatever they like with them",
+          us: "Nothing leaves. Tips and analytics are calculated inside the app",
         },
         {
           topic: "Who looks at your records",
           others: "Data teams, ad profiles, models in training",
-          us: "Nobody. Access is limited to running the service",
+          us: "Nobody. Access is limited to keeping the service running",
         },
         {
           topic: "When you want to leave",
           others: "Limited or no export",
-          us: "Full re-importable export, and account deletion from Settings",
+          us: "A full export you can re-import, and account deletion in Settings",
         },
       ],
-      note: "We name no names: read any app's privacy policy before handing it your statement. Ours is in [Privacy](/privacy), in plain language.",
+      note: "We're not naming names: read any app's privacy policy before you hand over your statements. Ours is in [Privacy](/privacy), in plain language.",
     },
     howItWorks: {
       eyebrow: "How it works",
       titleLead: "Five minutes a week,",
-      titleEmphasis: "not a spreadsheet night",
+      titleEmphasis: "not a night in a spreadsheet",
       subtitle:
-        "Manual entry sounds like work. Here is what it actually takes.",
+        "Manual entry sounds like work. Here's what it really takes.",
       steps: [
         {
           title: "Add your accounts and cards",
           description:
-            "Bank name, current balance, and each card's closing and due day. That's all the setup there is.",
+            "Bank name, current balance, and each card's closing and due dates. That's the whole setup.",
           duration: "About 2 minutes, once",
         },
         {
-          title: "Log or import what you spend",
+          title: "Log or import your spending",
           description:
-            "Tap the quick modal when you pay for something, or drop in the OFX, CSV or XLSX statement your bank exports. See [import bank statements](/import-bank-statements).",
+            "Use the quick-add form when you pay for something, or drop in the OFX, CSV or XLSX statement your bank exports. See [how to import bank statements](/import-bank-statements).",
           duration: "5 minutes a week",
         },
         {
           title: "See what's left before the month ends",
           description:
-            "Balance, upcoming bills, card statements and goals update on their own. Open the app, read the answer, close it.",
+            "Your balance, upcoming bills, card statements and goals update on their own. Open the app, get your answer, close it.",
           duration: "Every time you open it",
         },
       ],
       footnote:
-        "Open Finance bank connections are in development and will be optional: manual entry and file import stay exactly as they are. See [what's next](/#roadmap).",
+        "Open Finance bank connections are in development and will be optional: manual entry and file import will stay exactly as they are. See [what's coming](/#roadmap).",
     },
     pricing: {
       eyebrow: "Pricing",
@@ -1191,17 +1208,17 @@ export const enUSMessages = {
             "1 bank account",
             "1 credit card",
             "1 active savings goal",
-            "Track your expenses and income",
-            "Add your transactions manually",
-            "Import and export transactions via CSV/XLSX/OFX",
+            "Expense and income tracking",
+            "Manual transaction entry",
+            "Import and export transactions (CSV, XLSX, OFX)",
           ],
           name: "Starter",
-          tagline: "Track your money, simply. Free, for good.",
+          tagline: "Track your money, hassle-free.",
         },
         plus: {
           cta: "Try Plus free for 7 days",
           features: [
-            "All features from Starter",
+            "Everything in Starter",
             "Up to 5 accounts",
             "Up to 5 cards",
             "Up to 5 goals",
@@ -1216,15 +1233,15 @@ export const enUSMessages = {
         premium: {
           cta: "Try Premium free for 7 days",
           features: [
-            "All features from Plus",
+            "Everything in Plus",
             "Unlimited accounts",
             "Unlimited cards",
             "Unlimited goals",
-            "Shared account (household) with your family and/or friends",
-            "Sync with Google Calendar",
-            "Detailed analytics and charts like: sankey, projected balance, expenses by category, unusual expenses, and more.",
+            "A shared space with family or friends",
+            "Google Calendar sync for your bills",
+            "Detailed charts: sankey, projected balance, spending by category, unusual spending and more",
             "Unlimited priority support",
-            "Early access to new features and improvements.",
+            "Early access to new features and improvements",
           ],
           name: "Premium",
           tagline: "One household, shared clarity.",
@@ -1242,7 +1259,7 @@ export const enUSMessages = {
       titleEmphasis: "no surprises",
       titleLead: "Simple plans,",
       freeNote:
-        "Starter is free for good, no credit card. Upgrade only when you need more, and cancel in one click.",
+        "Starter is free forever, no credit card required. Upgrade only when you need more, and cancel in one click.",
       yearly: "Yearly",
     },
     referral: {
@@ -1251,19 +1268,19 @@ export const enUSMessages = {
       titleEmphasis: "you both",
       titleTail: " get a month free",
       subtitle:
-        "Every account has an invite code. When a friend signs up with it and pays for Plus or Premium, 30 free days are added to both plans.",
+        "Every account has an invite code. When a friend signs up with it and pays for Plus or Premium, you each get 30 free days on your plan.",
       steps: [
         {
           title: "Share your code",
-          description: "Find it in Settings, copy the link and send it to a friend.",
+          description: "You'll find it in Settings. Copy the link and send it to a friend.",
         },
         {
           title: "They pay for Plus or Premium",
-          description: "They sign up with your code, try a paid plan for 7 days and pay to keep it.",
+          description: "They sign up with your code, try a paid plan free for 7 days, then pay to keep it.",
         },
         {
           title: "You both get 30 days",
-          description: "Right after their first payment, 30 free days land on their plan and on yours. There is no limit on how many friends you can invite.",
+          description: "As soon as they make their first payment, you each get 30 free days. There's no limit to how many friends you can invite.",
         },
       ],
       ctaSignedIn: "Get my invite link",
@@ -1273,10 +1290,10 @@ export const enUSMessages = {
     freePlan: {
       eyebrow: "Why is Starter free?",
       titleLead: "Free, and still",
-      titleEmphasis: "yours",
-      titleTail: " alone",
+      titleEmphasis: "yours alone",
+      titleTail: "",
       subtitle:
-        "A free plan is usually paid for with your data or your attention. Ours is paid for by Plus and Premium subscribers, so the same rules apply on every tier, including the free one.",
+        "Free plans are usually paid for with your data or your attention. Ours is paid for by Plus and Premium subscribers, so the same rules apply on every plan, including the free one.",
       cards: [
         {
           title: "Your data is never for sale",
@@ -1290,7 +1307,7 @@ export const enUSMessages = {
         },
       ],
       commitment:
-        "Our commitment is to you and your experience, not your data.",
+        "We're committed to you and your experience, not to your data.",
     },
     roadmap: {
       emailLabel: "Email",
@@ -1303,44 +1320,44 @@ export const enUSMessages = {
       ],
       laterLabel: "All of this is optional:",
       mainBody:
-        "Connect your banks and bring balances, transactions, and card statements straight into MyMoney, no typing. Authorization happens inside your own bank, through the regulated standard, and what comes in follows the same rules as everything else: it stays here, never sold, never shared.",
+        "Connect your banks and bring balances, transactions and card statements straight into MyMoney, without typing a thing. You authorize the connection inside your own bank, under the Brazilian Central Bank's regulated standard, and whatever comes in follows the same rules as everything else: it stays here, and it's never sold or shared.",
       mainNote:
-        "Available first to Premium subscribers, in closed beta.",
-      mainTitle: "Open Banking",
+        "Coming first to Premium subscribers, as a closed beta.",
+      mainTitle: "Open Finance",
       notifyMe: "Notify me",
       status: "In development",
       timeline: [
         {
           description:
-            "Bank connections that update on their own, with consent you can revoke at any time.",
+            "Connect bank accounts via Open Finance so balances and transactions update on their own, with consent you can revoke at any time.",
           now: true,
           title: "Automatic account connection",
           when: "In development",
         },
         {
           description:
-            "Closing and due dates filled in by the issuer itself, with no manual upkeep.",
+            "Closing and due dates filled in by your card issuer, with nothing to maintain by hand.",
           now: false,
           title: "Automatic card statements",
           when: "Soon",
         },
         {
           description:
-            "Our website already supports mobile and tablet, but we'll add the native app for a better experience and implement even more features.",
+            "The website already works on phones and tablets, but a native app will bring a better experience and even more features.",
           now: false,
           title: "Native app",
           when: "Soon",
         },
       ],
       titleEmphasis: "next",
-      titleLead: "What comes",
+      titleLead: "What's coming",
     },
     faq: {
       eyebrow: "Questions",
       items: [
         {
           answer:
-            "Privacy, and the business model behind it. You pay for the app, so we never need to make money from your data: nothing is sold, nothing is shared with advertisers or partners, nothing is sent to third-party AI companies, and nobody here reads your records. Your finances live in one place, encrypted, and you can export or delete them whenever you want. Everything else, from cards with statements to the household space, is built on top of that.",
+            "Privacy, and the business model behind it. You pay for the app, so we never need to make money from your data: nothing is sold, nothing is shared with advertisers or partners, nothing is sent to third-party AI companies, and nobody here reads your records. Your finances live in one place, encrypted, and you can export or delete them whenever you want. Everything else, from credit card statements to the shared household space, is built on that.",
           question: "What makes MyMoney different from other finance apps?",
         },
         {
@@ -1355,47 +1372,47 @@ export const enUSMessages = {
         },
         {
           answer:
-            "Not today. You log transactions in seconds through the quick modal, import your whole history via CSV/XLSX, or drop in an OFX statement straight from your bank ([how importing works](/docs/import-export)). Open Finance integration is in development and will be optional, under the same privacy rules as everything else.",
+            "Not yet. You can log transactions in seconds with the quick-add form, import your whole history from CSV/XLSX, or drop in an OFX statement straight from your bank ([how importing works](/docs/import-export)). Open Finance integration is in development and will be optional, with the same privacy rules as everything else.",
           question: "Do you connect to my bank account?",
         },
         {
           answer:
-            "No. Starter is free for as long as you like, with one account, one card and one goal, and it starts with an email and a password, nothing else. Plus and Premium start with 7 free days too, and you only pay for them if you stay.",
+            "Yes. Starter is free for as long as you want, with one account, one card and one goal, and all it takes to sign up is an email and a password. Plus and Premium also start with 7 free days, and you only pay if you stay.",
           question: "Is there a free plan?",
         },
         {
           answer:
-            "You go back to the free Starter plan. Nothing is deleted: every account, card, transaction and goal stays, and the Plus or Premium pages simply show an upgrade card until you subscribe again. Anything above Starter's limits is kept, you just can't add more until you upgrade.",
+            "You go back to the free Starter plan. Nothing is deleted: every account, card, transaction and goal stays, and the Plus or Premium pages simply show an upgrade prompt until you subscribe again. Anything over Starter's limits is kept; you just can't add more until you upgrade.",
           question: "What happens if I cancel a paid plan?",
         },
         {
           answer:
-            "Yes, on the Premium plan. You create a shared space, invite by email, and set each person's role, switching between your personal space and the household without mixing finances. More in [household budget](/family-budget).",
+            "Yes, on the Premium plan. You create a shared space, invite people by email and set each person's role, then switch between your personal space and the household's without mixing finances. More in [household budget](/family-budget).",
           question: "Can my family use it with me?",
         },
         {
           answer:
-            "About five minutes a week. Setup is your accounts and cards once; after that you log a purchase in the quick modal in seconds, or import the OFX, CSV or XLSX statement your bank's app exports and review the categories.",
+            "About five minutes a week. You set up your accounts and cards once; after that, you log a purchase with the quick-add form in seconds, or import the OFX, CSV or XLSX statement your banking app exports and check the categories.",
           question: "Isn't manual entry a lot of work?",
         },
         {
           answer:
-            "Any bank that exports an OFX, CSV or XLSX statement, which in Brazil includes Nubank, Itaú, Bradesco, Banco do Brasil, Inter, Santander and Caixa. Import works by file, so there is no list of supported banks to worry about.",
+            "Any bank that exports statements as OFX, CSV or XLSX, including Nubank, Itaú, Bradesco, Banco do Brasil, Inter, Santander and Caixa. Imports work by file, so there's no list of supported banks to worry about.",
           question: "Which banks does it work with?",
         },
         {
           answer:
-            "No. CSV/XLSX export is available at any time, with all 18 columns and bilingual headers, plus OFX for other finance apps. The exported file is re-importable: you take your data with you in a format that works again.",
+            "No. You can export to CSV/XLSX at any time, with all 18 columns and bilingual headers, plus OFX for other finance apps. The export can be re-imported, so your data leaves with you in a format that still works.",
           question: "If I cancel, do I lose my data?",
         },
         {
           answer:
-            "Yes. Every charge comes with an invoice, which is why the billing address is asked for when you pay. Invoices are available in the billing portal from Settings.",
-          question: "Do you issue invoices (nota fiscal)?",
+            "Yes. Every charge comes with an invoice, which is why we ask for your billing address at checkout. You'll find your invoices in the billing portal, under Settings.",
+          question: "Do you issue invoices?",
         },
         {
           answer:
-            "Yes. The entire interface exists in Portuguese (BR) and English, with prices in reais for Brazil and every value formatted for your language. Account yield can be modeled as % of CDI, monthly, or annual rate.",
+            "Yes. The whole interface is available in Brazilian Portuguese and English, with prices in reais for Brazil and every amount formatted for your language. Account yield can be set as a % of CDI, or a monthly or annual rate.",
           question: "Is it in Portuguese and in reais?",
         },
       ],
@@ -1406,8 +1423,8 @@ export const enUSMessages = {
       button: "Start for free",
       note: "Free Starter plan · No credit card · Upgrade anytime",
       subtitle:
-        "Add your accounts, set one goal, and let MyMoney do the watching.",
-      titleEmphasis: "finally quiet.",
+        "Add your accounts, set a goal and let MyMoney keep an eye on things.",
+      titleEmphasis: "finally at peace.",
       titleLead: "Your money,",
     },
     footer: {
@@ -1420,7 +1437,7 @@ export const enUSMessages = {
       dashboard: "Dashboard",
       faq: "Questions",
       goals: "Goals",
-      guide: "User guide",
+      guide: "Docs",
       guides: "Guides",
       instagram: "MyMoney on Instagram",
       language: "Language",
@@ -1433,17 +1450,17 @@ export const enUSMessages = {
       securityNote: "Your data lives in one place, encrypted, and is never sold or shared.",
       developedBy: "MyMoney is a Purple Apps LTDA product · CNPJ 68.148.554/0001-74",
       spending: "Spending",
-      tagline: "Your money, easy, clear and uncomplicated.",
+      tagline: "Your money, clear and simple.",
     },
     contact: {
       hero: {
         eyebrow: "Contact",
         titleLead: "Talk to us about",
         titleEmphasis: "anything.",
-        lede: "We're available to help with any questions or anything else you'd like to say. We answer all messages within one business day.",
+        lede: "We're here to help with any question, or anything else you'd like to talk about. We reply to every message within one business day.",
       },
       form: {
-        title: "Send an inquiry",
+        title: "Send a message",
         subtitle:
           "We reply to every message. Most get an answer within one business day.",
         nameLabel: "Name",
@@ -1466,7 +1483,7 @@ export const enUSMessages = {
           "Type your message here.",
         messageError: "Add a few details so we can help.",
         copyLabel: "Email me a copy of this message",
-        submit: "Send inquiry",
+        submit: "Send message",
         submitting: "Sending…",
         privacyNoteLead: "By sending this you agree to our",
         privacyPolicy: "Privacy Policy",
@@ -1703,7 +1720,7 @@ export const enUSMessages = {
       badge: "New",
       body: "Step-by-step guides for every page, from card statements to shared workspaces. It stays in the menu whenever you need it.",
       skip: "Got it",
-      title: "The user guide lives here",
+      title: "The docs live here",
     },
     firstStep: {
       badge: "Step 1",
@@ -3254,6 +3271,23 @@ export const ptBRMessages: Messages = {
       manage: "Gerenciar",
       changePlan: "Mudar de plano",
       upgrade: "Fazer upgrade",
+      storeManaged: (store: string) =>
+        `Assinado pelo app MyMoney e cobrado pela ${store}. Altere ou cancele nas assinaturas da sua conta da ${store}.`,
+      manageInStore: (store: string) => `Gerenciar na ${store}`,
+    },
+    store: {
+      names: { app_store: "App Store", play_store: "Google Play" },
+      restore: "Restaurar compras",
+      restored: "Seu plano está de volta.",
+      nothingToRestore: "Nenhuma compra para restaurar nesta conta.",
+      purchaseFailed: "A compra não foi concluída. Tente de novo.",
+      pending: "A loja ainda está confirmando seu pagamento. Seu plano é ativado assim que ela confirmar.",
+      activating: "Pagamento recebido. Seu plano é ativado em instantes; não é preciso comprar de novo.",
+      unavailable: "Não foi possível carregar os planos da loja agora.",
+      autoRenew: (store: string) =>
+        `A assinatura é renovada automaticamente até ser cancelada. O pagamento é cobrado na sua conta da ${store}; cancele pelo menos 24 horas antes do fim do período nas assinaturas da ${store}.`,
+      terms: "Termos de uso",
+      privacy: "Política de privacidade",
     },
     deleteAccount: {
       section: {

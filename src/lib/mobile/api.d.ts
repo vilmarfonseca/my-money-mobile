@@ -147,6 +147,12 @@ export declare const mobileApi: {
     readonly "integrations.syncCalendarNow": typeof syncCalendarNow;
     readonly "integrations.disconnectCalendar": typeof disconnectGoogleCalendar;
     readonly "billing.entitlements": () => Promise<import("@/lib/billing/entitlements").Entitlements>;
+    /**
+     * Called by the app right after an App Store / Google Play purchase or
+     * restore: pulls this user's store access from Adapty now, instead of
+     * waiting for the webhook, and answers the resulting entitlements.
+     */
+    readonly "billing.syncStore": () => Promise<import("@/lib/billing/entitlements").Entitlements>;
     /** Prices for the plan picker, in the currency the request's country pays. */
     readonly "billing.displayPrices": () => Promise<import("@/lib/billing/display-prices").DisplayPrices>;
     /**

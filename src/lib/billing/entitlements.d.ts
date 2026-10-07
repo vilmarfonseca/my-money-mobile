@@ -46,8 +46,18 @@ export type Entitlements = {
     /** Stripe holds a card for this subscription; free days from a referral
      *  gifted to a Starter account start without one. */
     hasPaymentMethod: boolean;
+    /**
+     * Who bills the plan in force: Stripe (bought on the web) or the App Store
+     * / Google Play (bought in the native app). Null on Starter and on a
+     * complimentary plan. A store plan is managed in the store, never through
+     * Stripe's checkout or portal.
+     */
+    provider: BillingProvider | null;
 };
-export declare function buildEntitlements(row: typeof schema.subscriptions.$inferSelect | undefined, compTier?: PlanTier | null): Entitlements;
+export type BillingProvider = "stripe" | "app_store" | "play_store";
+type SubscriptionRow = typeof schema.subscriptions.$inferSelect;
+type StoreSubscriptionRow = typeof schema.storeSubscriptions.$inferSelect;
+export declare function buildEntitlements(row: SubscriptionRow | undefined, compTier?: PlanTier | null, store?: StoreSubscriptionRow | null, now?: Date): Entitlements;
 export declare function getSubscriptionForUserId(userId: string): Promise<{
     createdAt: Date;
     updatedAt: Date;
@@ -84,3 +94,4 @@ export type LimitCheck = {
  * remains untouched.
  */
 export declare function checkResourceLimit(resource: LimitedResource, currentCount: number): Promise<LimitCheck>;
+export {};

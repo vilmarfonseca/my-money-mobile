@@ -70,6 +70,8 @@ const SKIPPED = [
   /^test-support\//,
   /^admin\/admin-access\.ts$/,
   /^db\/sample-user\.ts$/,
+  /^db\/seed-data\//,
+  /^landing\//,
   /^routes\//,
   /^analytics\/track\.ts$/,
   /^analytics\/marketing-signal\.ts$/,

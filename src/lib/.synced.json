@@ -1,6 +1,6 @@
 {
   "source": "my-money-v2",
-  "commit": "c9a983c+dirty",
+  "commit": "aa21b74+dirty",
   "files": [
     "account/account-actions.d.ts",
     "account/deletion-reasons.ts",
@@ -21,6 +21,7 @@
     "billing/display-prices.d.ts",
     "billing/entitlements.d.ts",
     "billing/plans.ts",
+    "billing/store-products.ts",
     "billing/trial-lock.ts",
     "calendar/calendar-queries.d.ts",
     "calendar/calendar-style.ts",
