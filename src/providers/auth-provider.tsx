@@ -5,6 +5,7 @@ import { createContext, use, useEffect, type ReactNode } from 'react';
 
 import { setApiTokenGetter } from '@/api/client';
 import { devSampleUser } from '@/api/config';
+import { disconnectStoreBilling } from '@/providers/store-billing';
 
 export type SessionUser = {
   email: string | null;
@@ -55,6 +56,9 @@ function ClerkSession({ children }: { children: ReactNode }) {
     isLoaded,
     isSignedIn: Boolean(isSignedIn),
     signOut: async () => {
+      // A failure here must not keep anyone signed in; Adapty re-identifies
+      // on the next sign-in regardless.
+      await disconnectStoreBilling().catch(() => {});
       await clerk.signOut();
       // Nothing of the previous account may outlive its session.
       queryClient.clear();

@@ -14,6 +14,7 @@ import { I18nProvider, useI18n } from '@/lib/i18n/provider';
 import type { CurrencyCode } from '@/lib/settings/settings-queries';
 import { AppDataProvider } from '@/providers/app-data-provider';
 import { useSession } from '@/providers/auth-provider';
+import { connectStoreBilling } from '@/providers/store-billing';
 import { consumePendingLink } from '@/providers/pending-link';
 import { consumeSignUpLocale } from '@/providers/sign-up-flag';
 import { useTheme } from '@/theme/theme-provider';
@@ -38,6 +39,13 @@ export default function AppLayout() {
   useEffect(() => {
     if (savedTheme) setPreference(savedTheme);
   }, [savedTheme, setPreference]);
+
+  // Store purchases are attributed to the account by its ID, so Adapty is
+  // connected as soon as the account is known (a no-op without store billing).
+  const userId = data?.user.id;
+  useEffect(() => {
+    if (userId) connectStoreBilling(userId).catch(() => {});
+  }, [userId]);
 
   // An account created in this launch adopts the language picked on the
   // sign-in screen, with its currency, as a web sign-up adopts the language
